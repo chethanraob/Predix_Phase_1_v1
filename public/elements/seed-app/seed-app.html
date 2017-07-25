@@ -11,27 +11,43 @@
 <!-- px components -->
 <link rel="import" href="../../bower_components/px-app-nav/px-app-nav.html">
 <link rel="import" href="../../bower_components/px-view/px-view.html">
+<link rel="stylesheet" href="../../bootstrap/css/bootstrap.min.css">
+<link rel="stylesheet" href="../../bootstrap/js/bootstrap.min.js">
 
 <link rel="import" href="../ge-svg-logo/ge-svg-logo.html">
 <link rel="import" href="../predix-logo/predix-logo.html">
 <link rel="import" href="../seed-footer/seed-footer.html">
+<link rel="stylesheet" href="../../css/summary-view.css">
+<link rel="stylesheet" href="../../css/buildinginf-view.css">
+<link rel="stylesheet" href="../../css/buildingmoreinfo-view.css">
+<link rel="stylesheet" href="../../css/common.style.css">
+<link rel="stylesheet" href="../../css/buildingmoreinfo-view.css">
+<link rel="stylesheet" href="../../css/common.style.css">
+<link rel="stylesheet" href="../../css/main-page.style.css">
+<link href="https://fonts.googleapis.com/css?family=Roboto+Condensed" rel="stylesheet">
+
+<!-- Load c3.css -->
+<link href="../../c3-0.4.11/c3.css" rel="stylesheet">
 
 <dom-module id="seed-app">
   <template>
 
     <!-- apply imported seed app style module -->
     <style include="seed-app-styles"></style>
-
-    <header role="banner" class="flex flex--middle">
+	<div class="container-fluid">
+    <header role="banner" class="flex flex--middle" style="background:ghostwhite">
       <div class="viewport flex">
-        <h3 class="flex__item app-title"><ge-svg-logo class="u-mr--"></ge-svg-logo> Seed Application</h3>
-        <div class="flex__item">
+        <h3 class="flex__item app-title"><img class="u-mr--" src="logo/constellation-logo.gif" alt="constellation logo" style="width:220px;height:60px;margin-top : -3px;"></h3>
+        <div class="flex__item"> 
           <div class="flex" style="text-align:right;">
-            <h3 class="flex__item weight--normal logo">Powered by <predix-logo style="display:inline-block; width: 82px;" class="flex__item"></predix-logo></h3>
+            <h2 style="text-align:center;margin-left:-165px;margin-top:-2px; color:darkslategray;">
+             <span> Constellation Energy<br></span> <span>Energy Efficiency - Lead Prioritization Tool </span></h2>
+            <h3 class="flex__item weight--normal logo"> <img class="u-mr--" src="logo/musigma.png" alt="musigma logo" style="width:70px;height:57px;margin-top : 2px;"></h3>
           </div>
         </div>
       </div>
     </header>
+
 
     <div class="viewport">
 
@@ -50,50 +66,72 @@
             route="{{_route}}"
             use-hash-as-path>
           </app-location>
-
-          <!-- /dashboards route and view -->
-          <app-route
-            route="[[_route]]"
-            pattern="/dashboards"
-            active="{{_dashboardsActive}}">
-          </app-route>
-
-          <px-view
-            active="[[_dashboardsActive]]"
-            element-href="/elements/views/dashboards-view.html">
-          </px-view>
+          
 
           <!-- /blankpage route and view -->
           <app-route
             route="[[_route]]"
-            pattern="/blankpage"
-            active="{{_blankpageActive}}">
+            pattern="/summaryfirst"
+            active="{{_summaryfirstActive}}">
           </app-route>
           <px-view
-            active="[[_blankpageActive]]"
-            element-href="/elements/views/blankpage-view.html">
+            active="[[_summaryfirstActive]]"
+            element-href="/elements/views/summaryfirst-view.html">
           </px-view>
 
           <!-- /winddata route and view -->
           <app-route
             route="[[_route]]"
-            pattern="/winddata"
-            active="{{_winddataActive}}">
+            pattern="/overview"
+            active="{{_overviewActive}}">
           </app-route>
           <px-view
-            active="[[_winddataActive]]"
-            element-href="/elements/views/winddata-view.html">
+            active="[[_overviewActive]]"
+            element-href="/elements/views/overview-view.html">
           </px-view>
 
-          <!-- /simple-asset route and view -->
+          <!-- /state route and view -->
           <app-route
             route="[[_route]]"
-            pattern="/simple-asset"
-            active="{{_simple-assetActive}}">
+            pattern="/state"
+            active="{{_stateActive}}">
           </app-route>
           <px-view
-            active="[[_simple-assetActive]]"
-            element-href="/elements/views/simple-asset-view.html">
+            active="[[_stateActive]]"
+            element-href="/elements/views/state-view.html">
+          </px-view>
+		  
+		   <!-- /building info route and view -->
+          <app-route
+            route="[[_route]]"
+            pattern="/buildinginf"
+            active="{{_buildinginfActive}}">
+          </app-route>
+          <px-view
+            active="[[_buildinginfActive]]"
+            element-href="/elements/views/buildinginf-view.html">
+          </px-view>
+		  
+		   <!-- /building more info route and view -->
+          <app-route
+            route="[[_route]]"
+            pattern="/buildingmoreinfo"
+            active="{{_buildingmoreinfoActive}}">
+          </app-route>
+          <px-view
+            active="[[_buildingmoreinfoActive]]"
+            element-href="/elements/views/buildingmoreinfo-view.html">
+          </px-view>
+		  
+		   <!-- /building more info route and view -->
+          <app-route
+            route="[[_route]]"
+            pattern="/agencyoverview"
+            active="{{_agencyoverviewActive}}">
+          </app-route>
+          <px-view
+            active="[[_agencyoverviewActive]]"
+            element-href="/elements/views/agencyoverview-view.html">
           </px-view>
 
         </main>
@@ -102,7 +140,7 @@
     </div>
 
     <seed-footer footer-links='[[footerLinks]]'></seed-footer>
-
+	</div>
   </template>
   <script>
     Polymer({
@@ -131,13 +169,29 @@
           type: Array,
           value: function() {
             return [{
-              "label": "Dashboards",
-              "path": "/dashboards",
+              "label": "Summary",
+              "path": "/summaryfirst",
               "icon": "fa-tachometer"
             }, {
-              "label": "Blank Page",
-              "path": "/blankpage",
-              "icon": "fa-file"
+              "label": "Overview",
+              "path": "/overview",
+              "icon": "fa-sitemap"
+            }, {
+              "label": "State ",
+              "path": "/state",
+              "icon": "fa-line-chart"
+            }, {
+              "label": "Agency Overview",
+              "path": "/agencyoverview",
+              "icon": "fa-tachometer"
+            }, {
+              "label": "Building Info",
+              "path": "/buildinginf",
+              "icon": "fa-sitemap"
+            }, {
+              "label": "Building Comparison",
+              "path": "/buildingcomparison",
+              "icon": "fa-line-chart"
             }
             //Uncomment this block to show the Simple Asset navigation item on the menu.
             /* // asset-nav-item
@@ -174,14 +228,6 @@
               "label": "Contact",
               "href": "#/dashboards",
               "target": "_blank"
-            }, {
-              "label": "Accessibility",
-              "href": "#/dashboards",
-              "target": "_blank"
-            }, {
-              "label": "Cookies",
-              "href": "#/dashboards",
-              "target": "_blank"
             }
           ]
           }
@@ -202,7 +248,7 @@
         // set default route to /dashboards
         var l = window.location;
         if((l.hash === "#/" || l.hash === "") && l.pathname === "/") {
-          l.hash = "/dashboards";
+          l.hash = "/summaryfirst";
         }
       }
 
