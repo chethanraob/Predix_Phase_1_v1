@@ -8,14 +8,25 @@ Version : 
 Date :7/8/2017
 Author :Ankita
 Changes :
-
 Improved the conclusion section
+
+Date :7/27/2017
+Author :Shivnesh
+Changes :
+ * Building info Tab 1 functionalities - buildingInf()
+ * Building info Tab 2 functionalities - buildingMoreInfo()
+ * Overview tab - table click functionality - drawTable() & drawTable_State()
+ * Overview tab - drawChartLeftTop()
+ * unique - prototype to get unique values in an Array
 Added references*/
 
 
-var buildingName ;          
-var dataJson=[];
 
+//Variable declarations
+
+var buildingName;
+var dataJson = [];
+var buildingMIStarted = 0;
 var array = [];
 var vectorLayer;
 var map21;
@@ -25,42 +36,8 @@ var selectedCustomer = [], selectedAgency = [], selectedState = [], selectedUtil
     selectedSolar = [], selectedEmgen = [], selectedBattery = [], selectedCogen = [], selectedFuel = [], selectedStage = [], selectedStage3 = [],
     selectedEnergy = [], selectedRenewable = [];
 
-	
-/* var globalUtility = [];
-var globalAgency = [];
-var globalState = [];
-var globalData = [];
-var globalContract = [];
-var globalSolar = [];
-var globalEmgen = [];
-var globalBattery = [];
-var globalCogen = [];
-var globalFuel = [];
-var globalStage = [];
-var globalStage3 = [];
-var globalEnergy = [];
-var globalRenewable = [];
-var globalCustomer = [];
-var globalchartdata = []
- */
 
-
-
-
-
-//     makeRequest('POST', '/DataTableFiltered/' + selectedAgency +'/' +selectedBuilding, function (err, data) {
-//             console.log("success");
-//             console.log(data)
-
-//             drawTable(data)
-//             createMarkers(data)
-//         });
-
-// };
-
-
-
-
+// Function to populate the middle table in the overview tab
 function drawTable(data) {
     data = JSON.parse(JSON.parse(data).data);
     var nameMapping = {
@@ -69,20 +46,12 @@ function drawTable(data) {
         Agency: "Agency",
         Total_Mu_Sigma_Score: "Score",
     };
-
     var keys = d3.keys(nameMapping);
-
     var table = d3.select("#table_building");
     table.selectAll("*").remove();
-
-    // var ths = theads.selectAll('th').data(keys).enter().append("th").text(function(d) {
-    //     return nameMapping[d];
-    // });
-
     var tbodies = table.append("tbody");
     var rows = tbodies.selectAll("tr").data(data);
     rows = rows.enter().append("tr");
-
     var dataCells = rows.selectAll("td")
         .data(function (d) {
             var values = d3.keys(nameMapping).map(function (key) {
@@ -92,15 +61,23 @@ function drawTable(data) {
         });
     dataCells.enter().append("td").text(function (d, i) {
         return d;
+    }).style('width', function (d) {
+        return '25%';
     });
-                rows.on("click", function(d) {
-                                buildingName = d.Building_Name
-                                //window.location.href = "/#/overview"
-                                window.location.assign("/#/buildinginf")
-                                buildingInf()
-                                });
+
+    // On click of building name, redirects to building info tab 1
+    rows.on("click", function (d) {
+        buildingName = d.Building_Name
+        //window.location.href = "/#/overview"
+        if (buildingName != "NA") {
+            window.location.assign("/#/buildinginf")
+            buildingInf()
+        }
+    });
 };
 
+
+// Function to populate the middle table in the state tab
 function drawTable_State(data) {
     data = JSON.parse(JSON.parse(data).data);
     var nameMapping = {
@@ -133,18 +110,21 @@ function drawTable_State(data) {
     dataCells.enter().append("td").text(function (d, i) {
         return d;
     });
-                rows.on("click", function(d) {
-                                buildingName = d.Building_Name
-                                //window.location.href = "/#/overview"
-                                window.location.assign("/#/buildinginf")
-                                buildingInf()
-                                });
+    // On click of building name, redirects to building info tab 1
+    rows.on("click", function (d) {
+        buildingName = d.Building_Name
+        //window.location.href = "/#/overview"
+        if (buildingName != "NA") {
+            window.location.assign("/#/buildinginf")
+            buildingInf()
+        }
+    });
 };
 
 
+//function to create request
 function makeRequest(type, fullUrl, callback) {
     var request = new XMLHttpRequest();
-    console.log(request)
     request.open(type, fullUrl, true);
     request.setRequestHeader('Content-type', 'application/json');
     request.onreadystatechange = function () {
@@ -160,11 +140,7 @@ function makeRequest(type, fullUrl, callback) {
 }
 
 
-
-
-
-
-
+//function to get unique values as key-value pairs
 function uniq_fast(a) {
     var seen = {};
     var out = [];
@@ -181,18 +157,12 @@ function uniq_fast(a) {
             });
         }
     }
-    console.log("items")
-    console.log(out)
     return out;
 }
 
 
 
-
-
-
-
-
+//function attached with summarry tab
 function firstfunction() {
 
     data = [{ "Grade": "D", "Description": "Records containing Name of the Building, Location, Agency", "No. of records": "15,039" },
@@ -202,133 +172,150 @@ function firstfunction() {
     document.getElementById("table1").tableData = data
     document.getElementById("table1").filterable = false
 }
-Array.prototype.unique = function()
-{
-	var n = {},r=[];
-	for(var i = 0; i < this.length; i++) 
-	{
-		if (!n[this[i]]) 
-		{
-			n[this[i]] = true; 
-			r.push(this[i]); 
-		}
-	}
-	return r;
+
+
+//Function to get unique values 
+Array.prototype.unique = function () {
+    var n = {}, r = [];
+    for (var i = 0; i < this.length; i++) {
+        if (!n[this[i]]) {
+            n[this[i]] = true;
+            r.push(this[i]);
+        }
+    }
+    return r;
 }
 
 
-function drawChartLeftTop(filterData,opportunitiesData,stateNamesData)
-{
-	var numStates=57;
-	filterData = JSON.parse(JSON.parse(filterData).data)
-	var filteredStateNames = ['StateNames'];
-	for(j=0;j<filterData.length;j++)
-	{
-		filteredStateNames.push(filterData[j].State_Name);	
-	}
-	
-	filteredStateNames = filteredStateNames.unique();
-	
-	var filteredOpportunities=['Opportunities'] ;
-	if(filteredStateNames.includes("All"))
-	{
-		filteredOpportunities=opportunitiesData;
-		filteredStateNames=stateNamesData;
-	}
-	else
-	{
-	numStates = filteredStateNames.length-1;
-	
-	for(i=1;i<=numStates;i++)
-	{
-			filteredOpportunities.push(opportunitiesData[stateNamesData.indexOf(filteredStateNames[i])]);
-	}
-	}
-	console.log(numStates)
-	var innerChartHeight = numStates*21;
-	console.log(innerChartHeight)
-	if(innerChartHeight<400)
-	{innerChartHeight = 400;}
-console.log(innerChartHeight)
-	document.getElementById("chartlefttop").style.height = innerChartHeight.toString()+"px";
-	  var chart = c3.generate({
-                bindto: "#chartlefttop",
-                data: {
-                    x: 'StateNames',
-                    columns: [
-                        filteredStateNames,
-                        filteredOpportunities
+//function to draw the left top chart in Overview tab(StateVSOpportunities) and in State view tab (AgencyVSOpportunities)
+function drawChartLeftTop(filterData, opportunitiesData, stateNamesData, chartId) {
+    //Initialising number of states and agencies
+    var numStates = 57, numAgencies = 26;
 
-                    ],
-                    //url: '/chartData',
-                    type: 'bar',
-                    labels: true
-                },
-                padding: {
-                    bottom: 10,
-                    left: 70
-                },
-                axis: {
+    //Parsing data to be in an Array object	
+    filterData = JSON.parse(JSON.parse(filterData).data)
+    var filteredStateNames = ['StateNames'];
 
-                    x: {
-                        type: 'category',
-                        label: {
-                            text: 'State Names',
-                            position: 'outer-middle'
-                        }
-                    },
-                    y: {
-                        label: {
-                            text: 'Opportunities',
-                            position: 'outer-center'
-                        }
-                    },
-                    rotated: true
-                },
-                point: {
-                    show: true
-                },
-                bar: {
-                    width: {
-                        ratio: 0.5 // this makes bar width 50% of length between ticks
-                    }
-                    // or
-                    //dth: 100 // this makes bar width 100px
-                },
-                legend:
-                { show: false }
-            });
+    //Getting the selected items list
+    for (j = 0; j < filterData.length; j++) {
+        if (chartId == "chartlefttop")
+        { filteredStateNames.push(filterData[j].State_Name); }
+        else if (chartId == "chartlefttop_agency")
+        { filteredStateNames.push(filterData[j].Agency); }
+
+    }
+    filteredStateNames = filteredStateNames.unique();
+
+    //Getting opportunities for the selected list of states or agencies
+    var filteredOpportunities = ['Opportunities'];
+    //If All is selected, then entire data is pushed
+    if (filteredStateNames.includes("All")) {
+        filteredOpportunities = opportunitiesData;
+        filteredStateNames = stateNamesData;
+    }
+    else {
+        //Number of states calculated and corresponding opportunities is pushed
+        numStates = filteredStateNames.length - 1;
+        for (i = 1; i <= numStates; i++) {
+            filteredOpportunities.push(opportunitiesData[stateNamesData.indexOf(filteredStateNames[i])]);
+        }
+    }
+
+    //Calculating the height of the inner div in which chart is placed 
+    var innerChartHeight;
+    if (chartId == "chartlefttop")
+    { innerChartHeight = numStates * 21; }
+    else if (chartId == "chartlefttop_agency")
+    { innerChartHeight = numStates * 19; }
+    if (innerChartHeight < 400)
+    { innerChartHeight = 400; }
+
+    document.getElementById(chartId).style.height = innerChartHeight.toString() + "px";
+
+    //Generating chart
+    var chart = c3.generate({
+        bindto: "#" + chartId,
+        data: {
+            x: 'StateNames',
+            columns: [
+                filteredStateNames,
+                filteredOpportunities
+
+            ],
+            type: 'bar',
+            labels: true
+        },
+        padding: {
+            bottom: 10,
+            left: 70
+        },
+        axis: {
+
+            x: {
+                type: 'category',
+                label: {
+                    text: 'State Names',
+                    position: 'outer-middle'
+                }
+            },
+            y: {
+                label: {
+                    text: 'Opportunities',
+                    position: 'outer-center'
+                }
+            },
+            rotated: true
+        },
+        point: {
+            show: true
+        },
+        bar: {
+            width: {
+                ratio: 0.5 // this makes bar width 50% of length between ticks
+            }
+        },
+        legend:
+        { show: false }
+    });
 }
 
+
+//Function attached with the state view
 function secondfunction() {
-	var opportunitiesData = ['Opportunities'];
+
+
+    //initialising the variables to be plotted in state vs oppurtunity chart
+    var opportunitiesData = ['Opportunities'];
     var stateNamesData = ['StateNames'];
-    // dropDownnames= ["aaa","bbb"]
-    // document.getElementById("agencyName").items = dropDownnames
-	 document.getElementById('mid-table-loader').style.opacity='0';
-	document.getElementById('agency-state-name-content').style.opacity='1'; 
-	var globalUtility = [];
-var globalAgency = [];
-var globalState = [];
-var globalData = [];
-var globalContract = [];
-var globalSolar = [];
-var globalEmgen = [];
-var globalBattery = [];
-var globalCogen = [];
-var globalFuel = [];
-var globalStage = [];
-var globalStage3 = [];
-var globalEnergy = [];
-var globalRenewable = [];
-var globalCustomer = [];
-var globalchartdata = []
 
-   
+    //loader
+    document.getElementById('mid-table-loader').style.opacity = '0';
+    document.getElementById('agency-state-name-content').style.opacity = '1';
 
-
+    //variables with all dropdown items
+    var globalUtility = [];
+    var globalAgency = [];
+    var globalState = [];
+    var globalData = [];
+    var globalContract = [];
+    var globalSolar = [];
+    var globalEmgen = [];
+    var globalBattery = [];
+    var globalCogen = [];
+    var globalFuel = [];
+    var globalStage = [];
+    var globalStage3 = [];
+    var globalEnergy = [];
+    var globalRenewable = [];
+    var globalCustomer = [];
+    var globalchartdata = []
 
 
+
+
+
+
+    document.getElementById("cancelButton").addEventListener("click", cancelfilters);
     document.getElementById("applyButton").addEventListener("click", confirmFilters);
     document.getElementById("agencyName").items = dropdownitems;
     document.getElementById("agency").addEventListener("px-dropdown-checkbox-changed", filterdrop);
@@ -413,7 +400,9 @@ var globalchartdata = []
     var dropdownitems_3 = [];
 
 
-
+    // function triggered each time dropdown values are changed
+    //same function for all dropdowns
+    //gets the selected items into a variable and all the items as selected variables if 'All'
     function filterdrop() {
         console.log("changed filter value");
 
@@ -625,532 +614,582 @@ var globalchartdata = []
     }
 
 
-/*     $(document).ready(function () { */
+    // Initialising values to all dropdowns  
+    //not for state , agency and utility as it comes from data on load
 
-         dropDownnames = [{ "key": "1", "val": "All" }, { "key": "2", "val": "A" }, { "key": "3", "val": "B" }, { "key": "4", "val": "C" }, { "key": "5", "val": "D" }]
-            document.getElementById("dataGrade").items = dropDownnames
-            for (i = 1; i < dropDownnames.length; i++) {
-                globalData.push(dropDownnames[i].val)
-            }
-            document.getElementById("data").addEventListener("px-dropdown-checkbox-changed", filterdrop);
-            dropDownnames = [{ "key": "1", "val": "All" }, { "key": "2", "val": "ESPC" }, { "key": "3", "val": "NA" }, { "key": "4", "val": "UESC" }]
-            document.getElementById("contractingValue").items = dropDownnames
-            for (i = 1; i < dropDownnames.length; i++) {
-                globalContract.push(dropDownnames[i].val)
-            }
-            document.getElementById("contract").addEventListener("px-dropdown-checkbox-changed", filterdrop);
-            dropDownnames = [{ "key": "1", "val": "All" }, { "key": "2", "val": "NO" }, { "key": "3", "val": "YES" }]
-            document.getElementById("currentCustomer").items = dropDownnames
-            for (i = 1; i < dropDownnames.length; i++) {
-                globalCustomer.push(dropDownnames[i].val)
-            }
-            document.getElementById("customer").addEventListener("px-dropdown-checkbox-changed", filterdrop);
-            dropDownnames = [{ "key": "1", "val": "All" }, { "key": "2", "val": "0" }, { "key": "3", "val": "1" }]
-            document.getElementById("solarFlag").items = dropDownnames
-            for (i = 1; i < dropDownnames.length; i++) {
-                globalSolar.push(dropDownnames[i].val)
-            }
-            document.getElementById("solar").addEventListener("px-dropdown-checkbox-changed", filterdrop);
-            dropDownnames = [{ "key": "1", "val": "All" }, { "key": "2", "val": "0" }, { "key": "3", "val": "1" }]
-            document.getElementById("batteryFlag").items = dropDownnames
-            for (i = 1; i < dropDownnames.length; i++) {
-                globalBattery.push(dropDownnames[i].val)
-            }
-            document.getElementById("battery").addEventListener("px-dropdown-checkbox-changed", filterdrop);
-            dropDownnames = [{ "key": "1", "val": "All" }, { "key": "2", "val": "0" }, { "key": "3", "val": "1" }]
-            document.getElementById("cogenFlag").items = dropDownnames
-            for (i = 1; i < dropDownnames.length; i++) {
-                globalCogen.push(dropDownnames[i].val)
-            }
-            document.getElementById("cogen").addEventListener("px-dropdown-checkbox-changed", filterdrop);
-            dropDownnames = [{ "key": "1", "val": "All" }, { "key": "2", "val": "0" }, { "key": "3", "val": "1" }]
-            document.getElementById("emgenFlag").items = dropDownnames
-            for (i = 1; i < dropDownnames.length; i++) {
-                globalEmgen.push(dropDownnames[i].val)
-            }
-            document.getElementById("emgen").addEventListener("px-dropdown-checkbox-changed", filterdrop);
-            dropDownnames = [{ "key": "1", "val": "All" }, { "key": "2", "val": "0" }, { "key": "3", "val": "1" }]
-            document.getElementById("fuelcellFlag").items = dropDownnames
-            for (i = 1; i < dropDownnames.length; i++) {
-                globalFuel.push(dropDownnames[i].val)
-            }
-            document.getElementById("fuelcell").addEventListener("px-dropdown-checkbox-changed", filterdrop);
-            dropDownnames = [{ "key": "1", "val": "All" }, { "key": "2", "val": "Green" }, { "key": "3", "val": "NA" }, { "key": "4", "val": "Red" }, { "key": "5", "val": "Yellow" }]
-            document.getElementById("stageemissionName").items = dropDownnames
-            for (i = 1; i < dropDownnames.length; i++) {
-                globalStage.push(dropDownnames[i].val)
-            }
-            document.getElementById("stageemission").addEventListener("px-dropdown-checkbox-changed", filterdrop);
-            dropDownnames = [{ "key": "1", "val": "All" }, { "key": "2", "val": "Green" }, { "key": "3", "val": "NA" }, { "key": "4", "val": "Red" }]
-            document.getElementById("stage3emissionName").items = dropDownnames
-            for (i = 1; i < dropDownnames.length; i++) {
-                globalStage3.push(dropDownnames[i].val)
-            }
-            document.getElementById("stage3").addEventListener("px-dropdown-checkbox-changed", filterdrop);
-            dropDownnames = [{ "key": "1", "val": "All" }, { "key": "2", "val": "Green" }, { "key": "3", "val": "NA" }, { "key": "4", "val": "Red" }, { "key": "5", "val": "Yellow" }]
-            document.getElementById("energyIntensity").items = dropDownnames
-            for (i = 1; i < dropDownnames.length; i++) {
-                globalEnergy.push(dropDownnames[i].val)
-            }
-            document.getElementById("energy").addEventListener("px-dropdown-checkbox-changed", filterdrop);
-            dropDownnames = [{ "key": "1", "val": "All" }, { "key": "2", "val": "Green" }, { "key": "3", "val": "NA" }, { "key": "4", "val": "Red" }]
-            document.getElementById("renewableEnergy").items = dropDownnames
-            for (i = 1; i < dropDownnames.length; i++) {
-                globalRenewable.push(dropDownnames[i].val)
-            }
-            document.getElementById("renewable").addEventListener("px-dropdown-checkbox-changed", filterdrop);
-
-
-			
-			function onMouseMove(browserEvent) {
-	overlay.setPosition(undefined);
-    content = document.getElementById('popup-content');
-    var coordinate = browserEvent.coordinate;
-    var pixel = map21.getPixelFromCoordinate(coordinate);
-	/*         var el = document.getElementById('name');
-			el.innerHTML = ''; */
-    map21.forEachFeatureAtPixel(pixel, function (feature) {
-        console.log("hello")
-        console.log(feature.getGeometry().A[0])
-
-        content.innerHTML = '<p>You clicked here:</p><code>' + feature.getGeometry().A[0] +
-            '</code>';
-        overlay.setPosition(coordinate);
-    });
-	    var pixel = map21.getPixelFromCoordinate(coordinate);
-	/*         var el = document.getElementById('name');
-			el.innerHTML = ''; */
-	
-	
-}
+    dropDownnames = [{ "key": "1", "val": "All" }, { "key": "2", "val": "A" }, { "key": "3", "val": "B" }, { "key": "4", "val": "C" }, { "key": "5", "val": "D" }]
+    document.getElementById("dataGrade").items = dropDownnames
+    for (i = 1; i < dropDownnames.length; i++) {
+        globalData.push(dropDownnames[i].val)
+    }
+    document.getElementById("data").addEventListener("px-dropdown-checkbox-changed", filterdrop);
+    dropDownnames = [{ "key": "1", "val": "All" }, { "key": "2", "val": "ESPC" }, { "key": "3", "val": "NA" }, { "key": "4", "val": "UESC" }]
+    document.getElementById("contractingValue").items = dropDownnames
+    for (i = 1; i < dropDownnames.length; i++) {
+        globalContract.push(dropDownnames[i].val)
+    }
+    document.getElementById("contract").addEventListener("px-dropdown-checkbox-changed", filterdrop);
+    dropDownnames = [{ "key": "1", "val": "All" }, { "key": "2", "val": "NO" }, { "key": "3", "val": "YES" }]
+    document.getElementById("currentCustomer").items = dropDownnames
+    for (i = 1; i < dropDownnames.length; i++) {
+        globalCustomer.push(dropDownnames[i].val)
+    }
+    document.getElementById("customer").addEventListener("px-dropdown-checkbox-changed", filterdrop);
+    dropDownnames = [{ "key": "1", "val": "All" }, { "key": "2", "val": "0" }, { "key": "3", "val": "1" }]
+    document.getElementById("solarFlag").items = dropDownnames
+    for (i = 1; i < dropDownnames.length; i++) {
+        globalSolar.push(dropDownnames[i].val)
+    }
+    document.getElementById("solar").addEventListener("px-dropdown-checkbox-changed", filterdrop);
+    dropDownnames = [{ "key": "1", "val": "All" }, { "key": "2", "val": "0" }, { "key": "3", "val": "1" }]
+    document.getElementById("batteryFlag").items = dropDownnames
+    for (i = 1; i < dropDownnames.length; i++) {
+        globalBattery.push(dropDownnames[i].val)
+    }
+    document.getElementById("battery").addEventListener("px-dropdown-checkbox-changed", filterdrop);
+    dropDownnames = [{ "key": "1", "val": "All" }, { "key": "2", "val": "0" }, { "key": "3", "val": "1" }]
+    document.getElementById("cogenFlag").items = dropDownnames
+    for (i = 1; i < dropDownnames.length; i++) {
+        globalCogen.push(dropDownnames[i].val)
+    }
+    document.getElementById("cogen").addEventListener("px-dropdown-checkbox-changed", filterdrop);
+    dropDownnames = [{ "key": "1", "val": "All" }, { "key": "2", "val": "0" }, { "key": "3", "val": "1" }]
+    document.getElementById("emgenFlag").items = dropDownnames
+    for (i = 1; i < dropDownnames.length; i++) {
+        globalEmgen.push(dropDownnames[i].val)
+    }
+    document.getElementById("emgen").addEventListener("px-dropdown-checkbox-changed", filterdrop);
+    dropDownnames = [{ "key": "1", "val": "All" }, { "key": "2", "val": "0" }, { "key": "3", "val": "1" }]
+    document.getElementById("fuelcellFlag").items = dropDownnames
+    for (i = 1; i < dropDownnames.length; i++) {
+        globalFuel.push(dropDownnames[i].val)
+    }
+    document.getElementById("fuelcell").addEventListener("px-dropdown-checkbox-changed", filterdrop);
+    dropDownnames = [{ "key": "1", "val": "All" }, { "key": "2", "val": "Green" }, { "key": "3", "val": "NA" }, { "key": "4", "val": "Red" }, { "key": "5", "val": "Yellow" }]
+    document.getElementById("stageemissionName").items = dropDownnames
+    for (i = 1; i < dropDownnames.length; i++) {
+        globalStage.push(dropDownnames[i].val)
+    }
+    document.getElementById("stageemission").addEventListener("px-dropdown-checkbox-changed", filterdrop);
+    dropDownnames = [{ "key": "1", "val": "All" }, { "key": "2", "val": "Green" }, { "key": "3", "val": "NA" }, { "key": "4", "val": "Red" }]
+    document.getElementById("stage3emissionName").items = dropDownnames
+    for (i = 1; i < dropDownnames.length; i++) {
+        globalStage3.push(dropDownnames[i].val)
+    }
+    document.getElementById("stage3").addEventListener("px-dropdown-checkbox-changed", filterdrop);
+    dropDownnames = [{ "key": "1", "val": "All" }, { "key": "2", "val": "Green" }, { "key": "3", "val": "NA" }, { "key": "4", "val": "Red" }, { "key": "5", "val": "Yellow" }]
+    document.getElementById("energyIntensity").items = dropDownnames
+    for (i = 1; i < dropDownnames.length; i++) {
+        globalEnergy.push(dropDownnames[i].val)
+    }
+    document.getElementById("energy").addEventListener("px-dropdown-checkbox-changed", filterdrop);
+    dropDownnames = [{ "key": "1", "val": "All" }, { "key": "2", "val": "Green" }, { "key": "3", "val": "NA" }, { "key": "4", "val": "Red" }]
+    document.getElementById("renewableEnergy").items = dropDownnames
+    for (i = 1; i < dropDownnames.length; i++) {
+        globalRenewable.push(dropDownnames[i].val)
+    }
+    document.getElementById("renewable").addEventListener("px-dropdown-checkbox-changed", filterdrop);
 
 
-        console.log("in it");
+    //it gives popup on mouse hover on markers
+    function onMouseMove(browserEvent) {
+        overlay.setPosition(undefined);
+        content = document.getElementById('popup-content');
+        var coordinate = browserEvent.coordinate;
+        var pixel = map21.getPixelFromCoordinate(coordinate);
+        /*         var el = document.getElementById('name');
+                el.innerHTML = ''; */
+        map21.forEachFeatureAtPixel(pixel, function (feature) {
+            console.log("hello")
+            console.log(feature.getGeometry().A[0])
 
-		function confirmFilters() {
-	
-	
-    var request = new XMLHttpRequest();
-    var datapointsUrl = "/DataTableFiltered";
-    request.open('POST', datapointsUrl, true);
-    request.setRequestHeader('Content-Type', 'application/json');
-    request.onload = function (response) {
-        if (request.status >= 200 && request.status < 400) {
-			 document.getElementById('mid-table-loader').style.opacity='0';
-			document.getElementById('agency-state-name-content').style.opacity='1';  
-            console.log("success");
-            console.log(request.response);
-            
-			getdropdowns(request.response);
-            drawTable(request.response);
-            createMarkers(request.response);
-			drawChartLeftTop(request.response,opportunitiesData,stateNamesData);
+            content.innerHTML = '<p>You clicked here:</p><code>' + feature.getGeometry().A[0] +
+                '</code>';
+            overlay.setPosition(coordinate);
+        });
+        var pixel = map21.getPixelFromCoordinate(coordinate);
+        /*         var el = document.getElementById('name');
+                el.innerHTML = ''; */
 
-        } else {
-            console.log("failure on status code");
+
+    }
+
+
+    console.log("in it");
+
+
+    //function that runs on click of apply
+    //gets filtered data based on the filtered values
+    function confirmFilters() {
+
+
+        var request = new XMLHttpRequest();
+        var datapointsUrl = "/DataTableFiltered";
+        request.open('POST', datapointsUrl, true);
+        request.setRequestHeader('Content-Type', 'application/json');
+        request.onload = function (response) {
+            if (request.status >= 200 && request.status < 400) {
+                document.getElementById('mid-table-loader').style.opacity = '0';
+                document.getElementById('agency-state-name-content').style.opacity = '1';
+
+                getdropdowns(request.response);
+                drawTable(request.response);
+                createMarkers(request.response);
+                drawChartLeftTop(request.response, opportunitiesData, stateNamesData, "chartlefttop");
+
+            } else {
+                console.log("failure on status code");
+            }
+
+
+        };
+        request.onerror = function () {
+            console.log("failure after success code");
+        };
+
+        if (selectedAgency == "") {
+            selectedAgency = globalAgency
+        }
+
+        if (selectedState == "") {
+            selectedState = globalState
+        }
+        if (selectedUtility == "") {
+            selectedUtility = globalUtility
+        }
+        if (selectedCustomer == "") {
+            selectedCustomer = globalCustomer
+        }
+
+        if (selectedSolar == "") {
+            selectedSolar = globalSolar
+        }
+        if (selectedStage == "") {
+            selectedStage = globalStage
+        }
+        if (selectedStage3 == "") {
+            selectedStage3 = globalStage3
+        }
+
+        if (selectedRenewable == "") {
+            selectedRenewable = globalRenewable
+        }
+        if (selectedBattery == "") {
+            selectedBattery = globalBattery
+        }
+        if (selectedFuel == "") {
+            selectedFuel = globalFuel
+        }
+
+        if (selectedEmgen == "") {
+            selectedEmgen = globalEmgen
+        }
+        if (selectedCogen == "") {
+            selectedCogen = globalCogen
+        }
+        if (selectedContract == "") {
+            selectedContract = globalContract
+        }
+
+        if (selectedData == "") {
+            selectedData = globalData
+        }
+        if (selectedEnergy == "") {
+            selectedEnergy = globalEnergy
         }
 
 
+        //Variables for the slider to capture start and end values
+        var selectedStartftvalue = document.getElementById("grossSqft").value;
+        var selectedEndftvalue = document.getElementById("grossSqft").endValue;
+
+        var requestData = {
+            "agency": selectedAgency, "state": selectedState, "utility": selectedUtility,
+            "customer": selectedCustomer, "startftvalue": selectedStartftvalue, "endftvalue": selectedEndftvalue, "contract": selectedContract, "battery": selectedBattery, "emgen": selectedEmgen,
+            "cogen": selectedCogen, "fuelcell": selectedFuel, "renewable": selectedRenewable, "solar": selectedSolar,
+            "stage": selectedStage, "stage3": selectedStage3, "data": selectedData, "energy": selectedEnergy
+        };
+        document.getElementById('mid-table-loader').style.opacity = '1';
+        document.getElementById('agency-state-name-content').style.opacity = '0.2';
+        request.send(JSON.stringify(requestData));
     };
-    request.onerror = function () {
-        console.log("failure after success code");
-    };
-
-    if (selectedAgency == "") {
-        selectedAgency = globalAgency
-    }
-
-    if (selectedState == "") {
-        selectedState = globalState
-    }
-    if (selectedUtility == "") {
-        selectedUtility = globalUtility
-    }
-    if (selectedCustomer == "") {
-        selectedCustomer = globalCustomer
-    }
-
-    if (selectedSolar == "") {
-        selectedSolar = globalSolar
-    }
-    if (selectedStage == "") {
-        selectedStage = globalStage
-    }
-    if (selectedStage3 == "") {
-        selectedStage3 = globalStage3
-    }
-
-    if (selectedRenewable == "") {
-        selectedRenewable = globalRenewable
-    }
-    if (selectedBattery == "") {
-        selectedBattery = globalBattery
-    }
-    if (selectedFuel == "") {
-        selectedFuel = globalFuel
-    }
-
-    if (selectedEmgen == "") {
-        selectedEmgen = globalEmgen
-    }
-    if (selectedCogen == "") {
-        selectedCogen = globalCogen
-    }
-    if (selectedContract == "") {
-        selectedContract = globalContract
-    }
-
-    if (selectedData == "") {
-        selectedData = globalData
-    }
-    if (selectedEnergy == "") {
-        selectedEnergy = globalEnergy
-    }
 
 
-
-
-    var requestData = {
-        "agency": selectedAgency, "state": selectedState, "utility": selectedUtility,
-        "customer": selectedCustomer, "contract": selectedContract, "battery": selectedBattery, "emgen": selectedEmgen,
-        "cogen": selectedCogen, "fuelcell": selectedFuel, "renewable": selectedRenewable, "solar": selectedSolar,
-        "stage": selectedStage, "stage3": selectedStage3, "data": selectedData, "energy": selectedEnergy
-    };
-	document.getElementById('mid-table-loader').style.opacity='1';
-	document.getElementById('agency-state-name-content').style.opacity='0.2';  
-    request.send(JSON.stringify(requestData));
-};
-
-function getdropdowns(data)
-{
-	data = JSON.parse(JSON.parse(data).data);
-	var dropdownitems = [];
-	var dropdownitems_2 = [];
-	for (i = 0; i < data.length; i++) {
-                dropdownitems.push(data[i].Facility_Name)
-                dropdownitems_2.push(data[i].Building_Name)
-            }
-
-            dropdownitems = uniq_fast(dropdownitems)
-            dropdownitems_2 = uniq_fast(dropdownitems_2)
-
-            console.log(dropdownitems)
-            document.getElementById("facilityName").items = dropdownitems;
-            document.getElementById("buildingName").items = dropdownitems_2;
-			/*  document.getElementById("facilityName_State").items = dropdownitems;
-            document.getElementById("buildingName_State").items = dropdownitems_2; */
-
-document.getElementById("noOppurtunity").innerHTML  = 	data.length;		
-}
-
-function createMarkers(data) {
-    //data = JSON.parse(data)
-	var colorsused = ["#4286f4","#f441eb","#f4414f","#41aff4","#49f441","#ebf441","#f4a041","#d0f441","#ff0080","#ff0000","#808080","#bd6769","#bdef69","#d18bfe","#10176f","#660000","#4286f4","#f441eb","#f4414f","#41aff4","#49f441","#ebf441","#f4a041","#d0f441","#ff0080","#ff0000","#808080","#bd6769","#bdef69"]
-    var lngfirst;
-    var latfirst;
-    var array = [];
-    data = JSON.parse(JSON.parse(data).data); 
-	
-    lngfirst = -85.41;
-    latfirst = 38.82;
-    latlong = data;
-    console.log(latlong)
-	
-	for (var i = 0; i < data.length; i++)
-	{
-		
-	if (parseInt(data[i].Longitude)&& parseInt(data[i].Latitude)){
-			lngfirst = data[i].Longitude
-			latfirst = data[i].Latitude
-				break;
-			}
-			else{
-			lngfirst = -85.41;
-				latfirst = -85.41;
-			}
-	}	
-			
-    for (var i = 0; i < data.length; i++) {
-			
-			
-		
-
-        if (parseInt(data[i].Longitude)) {
-
-            lng = parseInt(data[i].Longitude)
-            lat = parseInt(data[i].Latitude)
-
-
-            var x = new ol.Feature({
-                geometry: new ol.geom.Point(ol.proj.fromLonLat([lng, lat]))
-            });
-			
-			for (var j = 0; j < globalAgency.length; j++){
-			bla = colorsused[j]	
-			if(data[i].Agency== globalAgency[j]) {
-            x.setStyle(new ol.style.Style({
-                image: new ol.style.Icon(/** @type {olx.style.IconOptions} */({
-                    color: bla,
-					scale: '0.4',
-                    crossOrigin: 'anonymous',
-                    src: 'https://openlayers.org/en/v4.2.0/examples/data/dot.png'
-                }))
-            }));
-		
-			}
-			
-			
-			}
-			array.push(x)
-			}
-            
-
+    //function that populates the facility name and building name on top of the middle table
+    //Also the no. of opportunities is calculated
+    function getdropdowns(data) {
+        data = JSON.parse(JSON.parse(data).data);
+        var dropdownitems = [];
+        var dropdownitems_2 = [];
+        for (i = 0; i < data.length; i++) {
+            dropdownitems.push(data[i].Facility_Name)
+            dropdownitems_2.push(data[i].Building_Name)
         }
-    
-    console.log(lng)
-    console.log(array)
 
+        dropdownitems = uniq_fast(dropdownitems)
+        dropdownitems_2 = uniq_fast(dropdownitems_2)
 
-    var vectorSource = new ol.source.Vector({
-        features: array
-    });
-    vectorLayer.getSource().clear()
-    vectorLayer.setSource(vectorSource)
-	/*       vectorLayer = new ol.layer.Vector({
-			source: vectorSource
-		  }); */
+        console.log(dropdownitems)
+        document.getElementById("facilityName").items = dropdownitems;
+        document.getElementById("buildingName").items = dropdownitems_2;
+        /*  document.getElementById("facilityName_State").items = dropdownitems;
+        document.getElementById("buildingName_State").items = dropdownitems_2; */
 
-    var rasterLayer = new ol.layer.Tile({
-        source: new ol.source.TileJSON({
-            url: 'https://api.tiles.mapbox.com/v3/mapbox.geography-class.json?secure',
-            crossOrigin: ''
-        })
-    });
+        document.getElementById("noOppurtunity").innerHTML = data.length;
+    }
 
-    console.log(lngfirst)
-    console.log(latfirst)
-    lngfirst = parseFloat(lngfirst)
-    latfirst = parseFloat(latfirst)
-    console.log(lngfirst)
-    console.log(latfirst)
-	/* lngfirst = lngfirst.toPrecision(2);
-	latfirst = latfirst.toPrecision(2); */
-    console.log(lngfirst)
-    console.log(latfirst)
-    lngfirst = parseFloat(lngfirst)
-    latfirst = parseFloat(latfirst)
-    View = map21.getView()
-    console.log(View)
-    View.setCenter(ol.proj.transform([lngfirst, latfirst], 'EPSG:4326', 'EPSG:3857'))
-    View.setZoom(5)
+    //Creates the markers on the map from the latlon data 
+    //Markers are also styled agency wisehere 
+    function createMarkers(data) {
+        //data = JSON.parse(data)
+        var colorsused = ["#4286f4", "#f441eb", "#f4414f", "#41aff4", "#49f441", "#ebf441", "#f4a041", "#d0f441", "#ff0080", "#ff0000", "#808080", "#bd6769", "#bdef69", "#d18bfe", "#10176f", "#660000", "#4286f4", "#f441eb", "#f4414f", "#41aff4", "#49f441", "#ebf441", "#f4a041", "#d0f441", "#ff0080", "#ff0000", "#808080", "#bd6769", "#bdef69"]
+        var lngfirst;
+        var latfirst;
+        var array = [];
+        data = JSON.parse(JSON.parse(data).data);
 
-}
+        lngfirst = -85.41;
+        latfirst = 38.82;
+        latlong = data;
+        console.log(latlong)
 
-        makeRequest('GET', '/DataTable', function (err, data) {
-            console.log("success");
-            console.log(data)
-            result_data = JSON.parse(data)
-            result_data = JSON.parse(result_data.data)
-            drawTable(data)
+        for (var i = 0; i < data.length; i++) {
 
-            // for (i = 0; i < result_data.length; i++) {
-            //     dropdownitems.push(result_data[i].Facility_Name)
-            //     dropdownitems_2.push(result_data[i].Building_Name)
-            // }
-
-            // dropdownitems = uniq_fast(dropdownitems)
-            // dropdownitems_2 = uniq_fast(dropdownitems_2)
-
-            // console.log(dropdownitems)
-            // document.getElementById("facilityName").items = dropdownitems;
-            // document.getElementById("buildingName").items = dropdownitems_2;
-
-
-
-
-
-        }
-        );
-
-
-
-
-
-        makeRequest('GET', '/chartTable', function (err, data) {
-            console.log("success");
-            console.log(data)
-            result_data = JSON.parse(data)
-            console.log(result_data)
-            result_data = JSON.parse(result_data.data)
-            console.log(result_data)
-			globalchartdata = result_data;
-
-            for (i = 0; i < result_data.length; i++) {
-                stateNamesData.push(result_data[i].State_Name)
-                opportunitiesData.push(parseInt(result_data[i].Opportunities))
+            if (parseInt(data[i].Longitude) && parseInt(data[i].Latitude)) {
+                lngfirst = data[i].Longitude
+                latfirst = data[i].Latitude
+                break;
             }
-            console.log(stateNamesData)
-            console.log(opportunitiesData)
-			/*dropdownitems=uniq_fast(dropdownitems) 
-			dropdownitems_2=uniq_fast(dropdownitems_2)
-		    
-			console.log(dropdownitems)
-			document.getElementById("facilityName").items=dropdownitems; 
-			document.getElementById("buildingName").items=dropdownitems_2; 
-			 */
-            //var s1tateNamesData=["StateNames","a","b","c"]
-            //var o1pportunitiesData=["Opportunities",10,20,15]
-            var chart = c3.generate({
-                bindto: "#chartlefttop",
-                data: {
-                    x: 'StateNames',
-                    columns: [
-                        stateNamesData,
-                        opportunitiesData
+            else {
+                lngfirst = -85.41;
+                latfirst = -85.41;
+            }
+        }
 
-                    ],
-                    //url: '/chartData',
-                    type: 'bar',
-                    labels: true
-                },
-                padding: {
-                    bottom: 10,
-                    left: 70
-                },
-                axis: {
+        for (var i = 0; i < data.length; i++) {
 
-                    x: {
-                        type: 'category',
-                        label: {
-                            text: 'State Names',
-                            position: 'outer-middle'
-                        }
-                    },
-                    y: {
-                        label: {
-                            text: 'Opportunities',
-                            position: 'outer-center'
-                        }
-                    },
-                    rotated: true
-                },
-                point: {
-                    show: true
-                },
-                bar: {
-                    width: {
-                        ratio: 0.5 // this makes bar width 50% of length between ticks
+
+
+
+            if (parseInt(data[i].Longitude)) {
+
+                lng = parseInt(data[i].Longitude)
+                lat = parseInt(data[i].Latitude)
+
+
+                var x = new ol.Feature({
+                    geometry: new ol.geom.Point(ol.proj.fromLonLat([lng, lat]))
+                });
+
+                for (var j = 0; j < globalAgency.length; j++) {
+                    bla = colorsused[j]
+                    if (data[i].Agency == globalAgency[j]) {
+                        x.setStyle(new ol.style.Style({
+                            image: new ol.style.Icon(/** @type {olx.style.IconOptions} */({
+                                color: bla,
+                                scale: '0.4',
+                                crossOrigin: 'anonymous',
+                                src: 'https://openlayers.org/en/v4.2.0/examples/data/dot.png'
+                            }))
+                        }));
+
                     }
-                    // or
-                    //dth: 100 // this makes bar width 100px
-                },
-                legend:
-                { show: false }
-            });
-
-        });
 
 
-        makeRequest('GET', '/AllData', function (err, data) {
-            console.log("success");
-            console.log(data)
-            result_data = JSON.parse(data)
-            result_data = JSON.parse(result_data.data)
-            console.log(result_data)
-            dropdownitems = ['All'];
-            dropdownitems_2 = ['All'];
-            dropdownitems_3 = ['All'];
-            for (i = 0; i < result_data.length; i++) {
-                dropdownitems.push(result_data[i].Agency)
-
-
-
-                dropdownitems_2.push(result_data[i].State_Name)
-
-
-                dropdownitems_3.push(result_data[i].Utility_Partner)
-
-
-            }
-            dropdownitems = uniq_fast(dropdownitems)
-
-            for (i = 1; i < dropdownitems.length; i++) {
-                globalAgency.push(dropdownitems[i].val)
+                }
+                array.push(x)
             }
 
-
-            dropdownitems_2 = uniq_fast(dropdownitems_2)
-
-            for (i = 1; i < dropdownitems_2.length; i++) {
-                globalState.push(dropdownitems_2[i].val)
-            }
-
-
-            dropdownitems_3 = uniq_fast(dropdownitems_3)
-            for (i = 1; i < dropdownitems_3.length; i++) {
-                globalUtility.push(dropdownitems_3[i].val)
-            }
-
-            console.log(dropdownitems)
-            document.getElementById("agencyName").items = dropdownitems;
-            document.getElementById("agency").addEventListener("px-dropdown-checkbox-changed", filterdrop);
-            document.getElementById("stateName").items = dropdownitems_2;
-            document.getElementById("state").addEventListener("px-dropdown-checkbox-changed", filterdrop);
-            document.getElementById("utilityName").items = dropdownitems_3;
-            document.getElementById("utility").addEventListener("px-dropdown-checkbox-changed", filterdrop);
-           
 
         }
-        );
-        // makeRequest('GET', '/DataTable', function(err, data) {
-        //     console.log("success");
-        //                 console.log(data)
-        //                 result_data=JSON.parse(data)
-        //                 result_data=JSON.parse(result_data.data)
-        //                 drawTable(data)
-        //   }
-        // );
+
+        console.log(lng)
+        console.log(array)
 
 
+        var vectorSource = new ol.source.Vector({
+            features: array
+        });
+        vectorLayer.getSource().clear()
+        vectorLayer.setSource(vectorSource)
+        /*       vectorLayer = new ol.layer.Vector({
+                source: vectorSource
+              }); */
 
-
-
-
-
-
-
-        var rome = new ol.Feature({
-            geometry: new ol.geom.Point(ol.proj.fromLonLat([-80.41, 28.82]))
+        var rasterLayer = new ol.layer.Tile({
+            source: new ol.source.TileJSON({
+                url: 'https://api.mapbox.com/v4/mapbox.streets-basic.json?access_token=pk.eyJ1Ijoic2VhcmNoaW5nYWtrdSIsImEiOiJjajVrdnVrZ3QybncxMnFvNnZwOXdnNzR3In0.TwSykj2VNdmMWko458WTmQ',
+                crossOrigin: ''
+            })
         });
 
-        var london = new ol.Feature({
-            geometry: new ol.geom.Point(ol.proj.fromLonLat([-85.41, 38.82]))
+        console.log(lngfirst)
+        console.log(latfirst)
+        lngfirst = parseFloat(lngfirst)
+        latfirst = parseFloat(latfirst)
+        console.log(lngfirst)
+        console.log(latfirst)
+        /* lngfirst = lngfirst.toPrecision(2);
+        latfirst = latfirst.toPrecision(2); */
+        console.log(lngfirst)
+        console.log(latfirst)
+        lngfirst = parseFloat(lngfirst)
+        latfirst = parseFloat(latfirst)
+        View = map21.getView()
+        console.log(View)
+        View.setCenter(ol.proj.transform([lngfirst, latfirst], 'EPSG:4326', 'EPSG:3857'))
+        View.setZoom(5)
+
+    }
+
+
+
+    //Function that executes once the cancel button is clicked
+    //It clears checks from dropdowns
+    function cancelfilters() {
+        console.log('Goin to clear ALL')
+        var agency = document.getElementById("agencyName").items
+        for (i = 0; i < agency.length; i++) {
+            agency[i].checked = false
+        }
+
+        var state = document.getElementById("stateName").items
+        for (i = 0; i < state.length; i++) {
+            state[i].checked = false
+        }
+
+        var utility = document.getElementById("utilityName").items
+        for (i = 0; i < utility.length; i++) {
+            utility[i].checked = false
+        }
+
+
+        var dataGrade = document.getElementById("dataGrade").items
+        for (i = 0; i < agency.length; i++) {
+            agency[i].checked = false
+        }
+
+        var contract = document.getElementById("contractingValue").items
+        for (i = 0; i < contract.length; i++) {
+            contract[i].checked = false
+        }
+
+        var customer = document.getElementById("currentCustomer").items
+        for (i = 0; i < customer.length; i++) {
+            customer[i].checked = false
+        }
+
+        var solar = document.getElementById("solarFlag").items
+        for (i = 0; i < solar.length; i++) {
+            solar[i].checked = false
+        }
+
+        var emgen = document.getElementById("emgenFlag").items
+        for (i = 0; i < emgen.length; i++) {
+            emgen[i].checked = false
+        }
+
+    }
+
+
+    //request to get data to populate data in the middle table in overview tab
+    makeRequest('GET', '/DataTable', function (err, data) {
+        result_data = JSON.parse(data)
+        result_data = JSON.parse(result_data.data)
+        drawTable(data)
+
+        // for (i = 0; i < result_data.length; i++) {
+        //     dropdownitems.push(result_data[i].Facility_Name)
+        //     dropdownitems_2.push(result_data[i].Building_Name)
+        // }
+
+        // dropdownitems = uniq_fast(dropdownitems)
+        // dropdownitems_2 = uniq_fast(dropdownitems_2)
+
+        // console.log(dropdownitems)
+        // document.getElementById("facilityName").items = dropdownitems;
+        // document.getElementById("buildingName").items = dropdownitems_2;
+
+
+
+
+
+    }
+    );
+
+
+
+
+    //request to get data for the state vs opportunities graph
+    makeRequest('GET', '/chartTable', function (err, data) {
+        result_data = JSON.parse(data)
+        result_data = JSON.parse(result_data.data)
+        globalchartdata = result_data;
+
+        for (i = 0; i < result_data.length; i++) {
+            stateNamesData.push(result_data[i].State_Name)
+            opportunitiesData.push(parseInt(result_data[i].Opportunities))
+        }
+        console.log(stateNamesData)
+        console.log(opportunitiesData)
+        /*dropdownitems=uniq_fast(dropdownitems) 
+        dropdownitems_2=uniq_fast(dropdownitems_2)
+        
+        console.log(dropdownitems)
+        document.getElementById("facilityName").items=dropdownitems; 
+        document.getElementById("buildingName").items=dropdownitems_2; 
+         */
+        //var s1tateNamesData=["StateNames","a","b","c"]
+        //var o1pportunitiesData=["Opportunities",10,20,15]
+        var chart = c3.generate({
+            bindto: "#chartlefttop",
+            data: {
+                x: 'StateNames',
+                columns: [
+                    stateNamesData,
+                    opportunitiesData
+
+                ],
+                //url: '/chartData',
+                type: 'bar',
+                labels: true
+            },
+            padding: {
+                bottom: 10,
+                left: 70
+            },
+            axis: {
+
+                x: {
+                    type: 'category',
+                    label: {
+                        text: 'State Names',
+                        position: 'outer-middle'
+                    }
+                },
+                y: {
+                    label: {
+                        text: 'Opportunities',
+                        position: 'outer-center'
+                    }
+                },
+                rotated: true
+            },
+            point: {
+                show: true
+            },
+            bar: {
+                width: {
+                    ratio: 0.5 // this makes bar width 50% of length between ticks
+                }
+                // or
+                //dth: 100 // this makes bar width 100px
+            },
+            legend:
+            { show: false }
         });
 
-		/*       var madrid = new ol.Feature({
-			geometry: new ol.geom.Point(ol.proj.fromLonLat([-3.683333, 40.4]))
-		  }); */
+    });
 
-        rome.setStyle(new ol.style.Style({
-            image: new ol.style.Icon(/** @type {olx.style.IconOptions} */({
-                color: '#8959A8',
-				scale: '0.4',
-                crossOrigin: 'anonymous',
-                src: 'https://openlayers.org/en/v4.2.0/examples/data/dot.png'
-            }))
-        }));
+    //request to get data for the agency,state, utility names for overview
+    makeRequest('GET', '/AllData', function (err, data) {
+        result_data = JSON.parse(data)
+        result_data = JSON.parse(result_data.data)
+        dropdownitems = ['All'];
+        dropdownitems_2 = ['All'];
+        dropdownitems_3 = ['All'];
+        for (i = 0; i < result_data.length; i++) {
+            dropdownitems.push(result_data[i].Agency)
 
-        london.setStyle(new ol.style.Style({
-            image: new ol.style.Icon(/** @type {olx.style.IconOptions} */({
-                color: '#4271AE',
-				scale: '0.4',
-                crossOrigin: 'anonymous',
-                src: 'https://openlayers.org/en/v4.2.0/examples/data/dot.png'
-            }))
-        }));
 
-		/*       madrid.setStyle(new ol.style.Style({
-				image: new ol.style.Icon(/** @type {olx.style.IconOptions} */ /*({
+
+            dropdownitems_2.push(result_data[i].State_Name)
+
+
+            dropdownitems_3.push(result_data[i].Utility_Partner)
+
+
+        }
+        dropdownitems = uniq_fast(dropdownitems)
+
+        for (i = 1; i < dropdownitems.length; i++) {
+            globalAgency.push(dropdownitems[i].val)
+        }
+
+
+        dropdownitems_2 = uniq_fast(dropdownitems_2)
+
+        for (i = 1; i < dropdownitems_2.length; i++) {
+            globalState.push(dropdownitems_2[i].val)
+        }
+
+
+        dropdownitems_3 = uniq_fast(dropdownitems_3)
+        for (i = 1; i < dropdownitems_3.length; i++) {
+            globalUtility.push(dropdownitems_3[i].val)
+        }
+
+        console.log(dropdownitems)
+        document.getElementById("agencyName").items = dropdownitems;
+        document.getElementById("agency").addEventListener("px-dropdown-checkbox-changed", filterdrop);
+        document.getElementById("stateName").items = dropdownitems_2;
+        document.getElementById("state").addEventListener("px-dropdown-checkbox-changed", filterdrop);
+        document.getElementById("utilityName").items = dropdownitems_3;
+        document.getElementById("utility").addEventListener("px-dropdown-checkbox-changed", filterdrop);
+
+
+    }
+    );
+    // makeRequest('GET', '/DataTable', function(err, data) {
+    //     console.log("success");
+    //                 console.log(data)
+    //                 result_data=JSON.parse(data)
+    //                 result_data=JSON.parse(result_data.data)
+    //                 drawTable(data)
+    //   }
+    // );
+
+
+
+
+
+
+
+    // two markers are created in the map
+    //This is to get the markers in the local
+
+    var rome = new ol.Feature({
+        geometry: new ol.geom.Point(ol.proj.fromLonLat([-80.41, 28.82]))
+    });
+
+    var london = new ol.Feature({
+        geometry: new ol.geom.Point(ol.proj.fromLonLat([-85.41, 38.82]))
+    });
+
+    /*       var madrid = new ol.Feature({
+        geometry: new ol.geom.Point(ol.proj.fromLonLat([-3.683333, 40.4]))
+      }); */
+
+    rome.setStyle(new ol.style.Style({
+        image: new ol.style.Icon(/** @type {olx.style.IconOptions} */({
+            color: '#8959A8',
+            scale: '0.4',
+            crossOrigin: 'anonymous',
+            src: 'https://openlayers.org/en/v4.2.0/examples/data/dot.png'
+        }))
+    }));
+
+    london.setStyle(new ol.style.Style({
+        image: new ol.style.Icon(/** @type {olx.style.IconOptions} */({
+            color: '#4271AE',
+            scale: '0.4',
+            crossOrigin: 'anonymous',
+            src: 'https://openlayers.org/en/v4.2.0/examples/data/dot.png'
+        }))
+    }));
+
+    /*       madrid.setStyle(new ol.style.Style({
+            image: new ol.style.Icon(/** @type {olx.style.IconOptions} */ /*({
 color: [113, 140, 0],
 crossOrigin: 'anonymous',
 src: 'https://openlayers.org/en/v4.2.0/examples/data/dot.png'
@@ -1158,608 +1197,618 @@ src: 'https://openlayers.org/en/v4.2.0/examples/data/dot.png'
 })); */
 
 
-        var vectorSource = new ol.source.Vector({
-            features: [rome, london]
-        });
+    var vectorSource = new ol.source.Vector({
+        features: [rome, london]
+    });
 
-        vectorLayer = new ol.layer.Vector({
-            source: vectorSource
-        });
+    vectorLayer = new ol.layer.Vector({
+        source: vectorSource
+    });
 
-        var rasterLayer = new ol.layer.Tile({
-            source: new ol.source.TileJSON({
-                url: 'https://api.tiles.mapbox.com/v3/mapbox.geography-class.json?secure',
-                crossOrigin: ''
-            })
-        });
-
-
+    var rasterLayer = new ol.layer.Tile({
+        source: new ol.source.TileJSON({
+            url: 'https://api.mapbox.com/v4/mapbox.streets-basic.json?access_token=pk.eyJ1Ijoic2VhcmNoaW5nYWtrdSIsImEiOiJjajVrdnVrZ3QybncxMnFvNnZwOXdnNzR3In0.TwSykj2VNdmMWko458WTmQ',
+            crossOrigin: ''
+        })
+    });
 
 
 
 
-        container = document.getElementById('popup')
-
-        overlay = new ol.Overlay(/** @type {olx.OverlayOptions} */({
-            element: container,
-            autoPan: true,
-            autoPanAnimation: {
-                duration: 250
-            }
-        }));
-
-        map21 = new ol.Map({
-            layers: [rasterLayer, vectorLayer],
-            overlays: [overlay],
-            target: document.getElementById('map2'),
-            view: new ol.View({
-                center: ol.proj.fromLonLat([-70.41, 18.82]),
-                zoom: 3
-            })
-        });
-
-        map21.on('pointermove', onMouseMove);
-
-        closer = document.getElementById('popup-closer')
-
-        closer.onclick = function () {
-            overlay.setPosition(undefined);
-            closer.blur();
-            return false;
-        };
 
 
-        makeRequest('GET', '/LongLat', function (err, data) {
+    container = document.getElementById('popup')
+
+    overlay = new ol.Overlay(/** @type {olx.OverlayOptions} */({
+        element: container,
+        autoPan: true,
+        autoPanAnimation: {
+            duration: 250
+        }
+    }));
+
+    //get the map with two markers even in local
+    map21 = new ol.Map({
+        layers: [rasterLayer, vectorLayer],
+        overlays: [overlay],
+        target: document.getElementById('map2'),
+        view: new ol.View({
+            center: ol.proj.fromLonLat([-70.41, 18.82]),
+            zoom: 3
+        })
+    });
+
+    map21.on('pointermove', onMouseMove);
+
+    closer = document.getElementById('popup-closer')
+
+    closer.onclick = function () {
+        overlay.setPosition(undefined);
+        closer.blur();
+        return false;
+    };
+
+
+
+    //request to get latlon data and plot the map during the initial load
+    makeRequest('GET', '/LongLat', function (err, data) {
+
+
+
+        var data = data
+        createMarkers(data)
+    }
+    );
+
+
+
+
+
+
+
+
+    /*    }); */
+
+
+
+
+}
+
+//Function to draw circles in the building info tab 1
+function buildingInfCircles() {
+    dataJson = [{ "id": "circle12ghg", "cx": 100, "label": "Stage 1&2 GHG Emissions" }, { "id": "circle3ghg", "cx": 300, "label": "Stage 3 GHG Emissions" }, { "id": "circlereduction", "cx": 500, "label": "Reduction in Energy Intensity" }, { "id": "circleusage", "cx": 700, "label": "Usage of Renewable Energy" }]
+    var svg_container = d3.select("#circles_bottomright")
+        .append("svg")
+        .style("width", "100%")
+        .attr("viewBox", "0 0 800 200")
+        .attr("perserveAspectRatio", "xMinYMid");
+    var circles = svg_container.selectAll("circle")
+        .data(dataJson)
+        .enter()
+        .append("circle");
+    var circle_attributes = circles.attr("cx", function (d) { return d.cx; })
+        .attr("id", function (d) { return d.id; })
+        .attr("cy", 60)
+        .attr("r", 40);
+    var text = svg_container.selectAll("text")
+        .data(dataJson)
+        .enter()
+        .append("text");
+    var textLabels = text.attr("x", function (d) { return d.cx - 70; })
+        .attr("y", 120)
+        .text(function (d) { return d.label; });
+}
+
+//Function to populate building info tab 1 based on building name selection
+function buildingInf() {
+    console.log(buildingName)
+    //window.location.href = "/#/overview"
+    d3.select("#moreinfolink").on("click", function () { window.location.assign("/#/buildingmoreinfo"); })
+    var facilityScore = ['Score on selected facility'];
+    var flagArray = [];
+    var batteryColor = "grey", coGenColor = "grey", emGenColor = "grey", fuelCellColor = "grey", solarColor = "grey";
+    var aName = " ", fName = " ", bName = " ", sName = " ", pReason = " ", sReason = " ";
+    var maxScoreArray = ['Maximum Score on selected category'];
+    $(document).ready(function () {
+        //document.location.assign("/#/overview")
+        // '/DataTableFiltered/'+selectedAgency
+        makeRequest('GET', '/buildingInfMaxScores', function (err, data) {
             console.log("success");
             console.log(data)
-
-
-
-            var data = data
-            createMarkers(data)
-        }
-        );
-
-
-
-
-
-
-
-
- /*    }); */
-
-
-
-
-}
-
-function buildingInfCircles()
-{
-                dataJson = [{"id":"circle12ghg","cx":100,"label":"Stage 1&2 GHG Emissions"},{"id":"circle3ghg","cx":300,"label":"Stage 3 GHG Emissions"},{"id":"circlereduction","cx":500,"label":"Reduction in Energy Intensity"},{"id":"circleusage","cx":700,"label":"Usage of Renewable Energy"}]
-                var svg_container = d3.select("#circles_bottomright")
-                                                                                                                .append("svg")
-                                                                                                                .style("width","100%")
-                                                                                                                .attr("viewBox","0 0 800 200")
-                                                                                                                .attr("perserveAspectRatio","xMinYMid");
-                var circles = svg_container.selectAll("circle")
-                         .data(dataJson)
-                          .enter()
-                         .append("circle");
-                var circle_attributes = circles.attr("cx",function(d){return d.cx;})
-                                               .attr("id",function(d){return d.id;})
-                                               .attr("cy",60)
-                                                .attr("r",40);
-                var text = svg_container.selectAll("text")
-                       .data(dataJson)
-                        .enter()
-                        .append("text");
-                var textLabels = text.attr("x", function(d) { return d.cx-70; })
-                                                                                                .attr("y", 120)
-                 .text( function (d) { return d.label; });
-}
-
-function buildingInf(){
-                console.log(buildingName)
-                                                //window.location.href = "/#/overview"
-                                d3.select("#moreinfolink").on("click",function(){window.location.assign("/#/buildingmoreinfo");})
-                var facilityScore = ['Score on selected facility'];
-                var flagArray=[];
-                var batteryColor = "grey",coGenColor = "grey",emGenColor = "grey",fuelCellColor ="grey",solarColor="grey";
-                var aName=" ",fName=" ",bName=" ",sName=" ",pReason=" ",sReason=" ";
-                var maxScoreArray=['Maximum Score on selected category'];
-                $(document).ready(function(){
-                                //document.location.assign("/#/overview")
-                                                // '/DataTableFiltered/'+selectedAgency
-                makeRequest('GET', '/buildingInfMaxScores', function(err, data) {
-                                console.log("success");
-                                console.log(data)
-                                result_data=JSON.parse(data)
-                                result_data=JSON.parse(result_data.data)
-                                console.log(result_data)
-                                maxScoreArray.push(result_data[0].score1)
-                                maxScoreArray.push(result_data[0].score2)
-                                maxScoreArray.push(result_data[0].score3)
-                                maxScoreArray.push(result_data[0].score4)
-                makeRequest('GET', '/buildingInf/'+buildingName, function(err, data) {
-    console.log("success");
+            result_data = JSON.parse(data)
+            result_data = JSON.parse(result_data.data)
+            console.log(result_data)
+            maxScoreArray.push(result_data[0].score1)
+            maxScoreArray.push(result_data[0].score2)
+            maxScoreArray.push(result_data[0].score3)
+            maxScoreArray.push(result_data[0].score4)
+            makeRequest('GET', '/buildingInf/' + buildingName, function (err, data) {
+                console.log("success");
                 console.log(data)
-                result_data=JSON.parse(data)
-                result_data=JSON.parse(result_data.data)
+                result_data = JSON.parse(data)
+                result_data = JSON.parse(result_data.data)
                 console.log(result_data)
-                
+
                 facilityScore.push(result_data[0].Total_Mu_Sigma_Score)
                 facilityScore.push(result_data[0].PTA_Score)
                 facilityScore.push(result_data[0].Energy_Profile_Score)
                 facilityScore.push(result_data[0].Potential_DE_Score)
-                
+
                 flagArray.push(result_data[0].Stage_1_2_GHG_emissions)
                 flagArray.push(result_data[0].Stage_3_GHG_emissions)
                 flagArray.push(result_data[0].Reduction_in_Energy_Intensity)
                 flagArray.push(result_data[0].Usage_of_renewable_energy)
-                
-				 for(i=0;i<4;i++)
-                                {
-                                                //dataJson[i].flag=flagArray[i];
-												if (flagArray[i]==null) {flagArray[i] = "grey"}
-                                }
-				 d3.select("#circle12ghg").attr("fill",flagArray[0])
-				  d3.select("#circle3ghg").attr("fill",flagArray[1])
-				   d3.select("#circlereduction").attr("fill",flagArray[2])
-				    d3.select("#circleusage").attr("fill",flagArray[3])
-								
-                if(result_data[0].Battery_Flag==0) {batteryColor = "red"} else if(result_data[0].Battery_Flag==1) {batteryColor = "green"}
-                if(result_data[0].Cogen_Flag==0) {coGenColor = "red"} else if(result_data[0].Cogen_Flag==1) {coGenColor = "green"}
-                if(result_data[0].Emgen_Flag==0) {emGenColor = "red"} else if(result_data[0].Emgen_Flag==1) {emGenColor = "green"}
-                if(result_data[0].Fuelcell_Flag==0) {fuelCellColor = "red"} else if(result_data[0].Fuelcell_Flag==1) {fuelCellColor = "green"}
-                if(result_data[0].Solar_Flag==0) {solarColor = "red"} else if(result_data[0].Solar_Flag==1) {solarColor = "green"}
-                
-                aName=result_data[0].Agency
-                fName=result_data[0].Facility_Name
-                bName=result_data[0].Building_Name
-                sName=result_data[0].State_Name
-                
-                pReason=result_data[0].Reason_Code_1
-                sReason=result_data[0].Reason_Code_2
-                
+
+                for (i = 0; i < 4; i++) {
+                    //dataJson[i].flag=flagArray[i];
+                    if (flagArray[i] == null) { flagArray[i] = "grey" }
+                }
+                d3.select("#circle12ghg").attr("fill", flagArray[0])
+                d3.select("#circle3ghg").attr("fill", flagArray[1])
+                d3.select("#circlereduction").attr("fill", flagArray[2])
+                d3.select("#circleusage").attr("fill", flagArray[3])
+
+                if (result_data[0].Battery_Flag == 0) { batteryColor = "red" } else if (result_data[0].Battery_Flag == 1) { batteryColor = "green" }
+                if (result_data[0].Cogen_Flag == 0) { coGenColor = "red" } else if (result_data[0].Cogen_Flag == 1) { coGenColor = "green" }
+                if (result_data[0].Emgen_Flag == 0) { emGenColor = "red" } else if (result_data[0].Emgen_Flag == 1) { emGenColor = "green" }
+                if (result_data[0].Fuelcell_Flag == 0) { fuelCellColor = "red" } else if (result_data[0].Fuelcell_Flag == 1) { fuelCellColor = "green" }
+                if (result_data[0].Solar_Flag == 0) { solarColor = "red" } else if (result_data[0].Solar_Flag == 1) { solarColor = "green" }
+
+                aName = result_data[0].Agency
+                fName = result_data[0].Facility_Name
+                bName = result_data[0].Building_Name
+                sName = result_data[0].State_Name
+
+                pReason = result_data[0].Reason_Code_1
+                sReason = result_data[0].Reason_Code_2
+
                 document.getElementById("batteryflag").style.color = batteryColor
                 document.getElementById("cogenflag").style.color = coGenColor
                 document.getElementById("emgenflag").style.color = emGenColor
                 document.getElementById("fuelcellflag").style.color = fuelCellColor
                 document.getElementById("solarflag").style.color = solarColor
-                
+
                 document.getElementById("agency-name").innerHTML = aName
                 document.getElementById("facility-name").innerHTML = fName
                 document.getElementById("building-name").innerHTML = bName
                 document.getElementById("state-name").innerHTML = sName
-                
+
                 document.getElementById("ptrc").innerHTML = pReason
                 document.getElementById("strc").innerHTML = sReason
-                
-				d3.select("#moreinfolink").on("click",function(){window.location.assign("/#/buildingmoreinfo");})
-				
-				
-				var chart = c3.generate({
-                                bindto:"#bar-chart-buildinfo",
-                                padding:{bottom:10},
-                                data: {
-                                x:'x',
-        columns: [
-                                                ['x',"Total score(max:800)","PTA score(max:100)","Energy profile score(max:400)","DE score(max:100)"],
-            //['Maximum score on selected category', 430, 200, 400, 300],
-            //['Score on selected facility', 400, 100, 340, 250]
-                                                maxScoreArray,
-                                                facilityScore
-                                                ],             
-                                                type: 'bar',
-                                                labels: true
-                                },
-                                bar: {
-        width: {
-            ratio: 0.3
-        }
-    },
-                axis:{
-                                x:{type:'category',
-                                                },
-                                y:{show:false}
+
+                d3.select("#moreinfolink").on("click", function () {
+                    window.location.assign("/#/buildingmoreinfo");
+                    buildingMoreInfo(aName, fName, bName, sName, maxScoreArray[1], facilityScore[1]);
                 }
+                )
+
+
+                var chart = c3.generate({
+                    bindto: "#bar-chart-buildinfo",
+                    padding: { bottom: 10 },
+                    data: {
+                        x: 'x',
+                        columns: [
+                            ['x', "Total score(max:800)", "PTA score(max:100)", "Energy profile score(max:400)", "DE score(max:100)"],
+                            //['Maximum score on selected category', 430, 200, 400, 300],
+                            //['Score on selected facility', 400, 100, 340, 250]
+                            maxScoreArray,
+                            facilityScore
+                        ],
+                        type: 'bar',
+                        labels: true
+                    },
+                    bar: {
+                        width: {
+                            ratio: 0.3
+                        }
+                    },
+                    axis: {
+                        x: {
+                            type: 'category',
+                        },
+                        y: { show: false }
+                    }
                 });
 
                 //var dataJson = [{"cx":100,"flag":"grey","label":"Stage 1&2 GHG Emissions"},{"cx":300,"flag":"grey","label":"Stage 3 GHG Emissions"},{"cx":500,"flag":"grey","label":"Reduction in Energy Intensity"},{"cx":700,"flag":"grey","label":"Usage of Renewable Energy"}]
-               
-});
-});
-});
-}
 
-
-
-
-function statefunction() {
-	
-	console.log('great')
-	
-	var opportunitiesData = ['Opportunities']
-    var stateNamesData = ['StateNames']
-	var globalUtility = [];
-var globalAgency = [];
-var globalState = [];
-var globalData = [];
-var globalContract = [];
-var globalSolar = [];
-var globalEmgen = [];
-var globalBattery = [];
-var globalCogen = [];
-var globalFuel = [];
-var globalStage = [];
-var globalStage3 = [];
-var globalEnergy = [];
-var globalRenewable = [];
-var globalCustomer = [];
-var globalchartdata = []
-
-function onMouseMove_State(browserEvent) {
-	overlay.setPosition(undefined);
-    content = document.getElementById('popup-content');
-    var coordinate = browserEvent.coordinate;
-    var pixel = map31.getPixelFromCoordinate(coordinate);
-	/*         var el = document.getElementById('name');
-			el.innerHTML = ''; */
-    map31.forEachFeatureAtPixel(pixel, function (feature) {
-        console.log("hello")
-        console.log(feature.getGeometry().A[0])
-
-        content.innerHTML = '<p>You clicked here:</p><code>' + feature.getGeometry().A[0] +
-            '</code>';
-        overlay.setPosition(coordinate);
+            });
+        });
     });
-	/*         var el = document.getElementById('name');
-			el.innerHTML = ''; */
-	
-	
 }
 
-function confirmFilters_State() {
-	
-	
-    var request = new XMLHttpRequest();
-    var datapointsUrl = "/DataTableFiltered";
-    request.open('POST', datapointsUrl, true);
-    request.setRequestHeader('Content-Type', 'application/json');
-    request.onload = function (response) {
-        if (request.status >= 200 && request.status < 400) {
-			document.getElementById('mid-table-loader').style.opacity='0';
-			document.getElementById('agency-state-name-content').style.opacity='1'; 
-            console.log("success");
-            console.log(request.response);
-            
-			getdropdowns_State(request.response);
-            drawTable_State(request.response);
-            createMarkers(request.response);
 
-        } else {
-            console.log("failure on status code");
-        }
+//function attached with the state view
+
+function statefunction() {
+
+    console.log('great')
+    //initialisation for populating the Agency vs Oppurtunities 
+    var opportunitiesData = ['Opportunities']
+    var stateNamesData = ['StateNames']
+
+    //initialise the global variables
+    var globalUtility = [];
+    var globalAgency = [];
+    var globalState = [];
+    var globalData = [];
+    var globalContract = [];
+    var globalSolar = [];
+    var globalEmgen = [];
+    var globalBattery = [];
+    var globalCogen = [];
+    var globalFuel = [];
+    var globalStage = [];
+    var globalStage3 = [];
+    var globalEnergy = [];
+    var globalRenewable = [];
+    var globalCustomer = [];
+    var globalchartdata = [];
+    var regulationdata = [];
+
+    //function to get the popups on mouse move on the map markers
+    function onMouseMove_State(browserEvent) {
+        overlay.setPosition(undefined);
+        content = document.getElementById('popup-content');
+        var coordinate = browserEvent.coordinate;
+        var pixel = map31.getPixelFromCoordinate(coordinate);
+        /*         var el = document.getElementById('name');
+                el.innerHTML = ''; */
+        map31.forEachFeatureAtPixel(pixel, function (feature) {
+            console.log("hello")
+            console.log(feature.getGeometry().A[0])
+
+            content.innerHTML = '<p>You clicked here:</p><code>' + feature.getGeometry().A[0] +
+                '</code>';
+            overlay.setPosition(coordinate);
+        });
+        /*         var el = document.getElementById('name');
+                el.innerHTML = ''; */
 
 
-    };
-    request.onerror = function () {
-        console.log("failure after success code");
-    };
-
-    if (selectedAgency == "") {
-        selectedAgency = globalAgency
-    }
-
-    if (selectedState == "") {
-        selectedState = globalState
-    }
-    if (selectedUtility == "") {
-        selectedUtility = globalUtility
-    }
-    if (selectedCustomer == "") {
-        selectedCustomer = globalCustomer
-    }
-
-    if (selectedSolar == "") {
-        selectedSolar = globalSolar
-    }
-    if (selectedStage == "") {
-        selectedStage = globalStage
-    }
-    if (selectedStage3 == "") {
-        selectedStage3 = globalStage3
-    }
-
-    if (selectedRenewable == "") {
-        selectedRenewable = globalRenewable
-    }
-    if (selectedBattery == "") {
-        selectedBattery = globalBattery
-    }
-    if (selectedFuel == "") {
-        selectedFuel = globalFuel
-    }
-
-    if (selectedEmgen == "") {
-        selectedEmgen = globalEmgen
-    }
-    if (selectedCogen == "") {
-        selectedCogen = globalCogen
-    }
-    if (selectedContract == "") {
-        selectedContract = globalContract
-    }
-
-    if (selectedData == "") {
-        selectedData = globalData
-    }
-    if (selectedEnergy == "") {
-        selectedEnergy = globalEnergy
     }
 
 
+    //function called on apply button in state function
+    function confirmFilters_State() {
 
 
-    var requestData = {
-        "agency": selectedAgency, "state": selectedState, "utility": selectedUtility,
-        "customer": selectedCustomer, "contract": selectedContract, "battery": selectedBattery, "emgen": selectedEmgen,
-        "cogen": selectedCogen, "fuelcell": selectedFuel, "renewable": selectedRenewable, "solar": selectedSolar,
-        "stage": selectedStage, "stage3": selectedStage3, "data": selectedData, "energy": selectedEnergy
-    };
-		document.getElementById('mid-table-loader').style.opacity='1';
-		document.getElementById('agency-state-name-content').style.opacity='0.2';  
-    request.send(JSON.stringify(requestData));
-};  
+        var request = new XMLHttpRequest();
+        var datapointsUrl = "/DataTableFiltered";
+        request.open('POST', datapointsUrl, true);
+        request.setRequestHeader('Content-Type', 'application/json');
+        request.onload = function (response) {
+            if (request.status >= 200 && request.status < 400) {
+                document.getElementById('mid-table-loader').style.opacity = '0';
+                document.getElementById('agency-state-name-content').style.opacity = '1';
+                getdropdowns_State(request.response);
+                drawTable_State(request.response);
+                createMarkers(request.response);
+                drawChartLeftTop(request.response, opportunitiesData, stateNamesData, "chartlefttop_agency");
 
-
-
-
-function getdropdowns_State(data)
-{
-	data = JSON.parse(JSON.parse(data).data);
-	var dropdownitems = [];
-	var dropdownitems_2 = [];
-	for (i = 0; i < data.length; i++) {
-                dropdownitems.push(data[i].Facility_Name)
-                dropdownitems_2.push(data[i].Building_Name)
+            } else {
+                console.log("failure on status code");
             }
 
-            dropdownitems = uniq_fast(dropdownitems)
-            dropdownitems_2 = uniq_fast(dropdownitems_2)
 
-            console.log(dropdownitems)
-         /*    document.getElementById("facilityName").items = dropdownitems;
-            document.getElementById("buildingName").items = dropdownitems_2; */
-			 document.getElementById("facilityName_State").items = dropdownitems;
-            document.getElementById("buildingName_State").items = dropdownitems_2;
+        };
+        request.onerror = function () {
+            console.log("failure after success code");
+        };
 
-/* document.getElementById("noOppurtunity").innerHTML  = 	data.length; */		
-}
+        if (selectedAgency == "") {
+            selectedAgency = globalAgency
+        }
+
+        if (selectedState == "") {
+            selectedState = globalState
+        }
+        if (selectedUtility == "") {
+            selectedUtility = globalUtility
+        }
+        if (selectedCustomer == "") {
+            selectedCustomer = globalCustomer
+        }
+
+        if (selectedSolar == "") {
+            selectedSolar = globalSolar
+        }
+        if (selectedStage == "") {
+            selectedStage = globalStage
+        }
+        if (selectedStage3 == "") {
+            selectedStage3 = globalStage3
+        }
+
+        if (selectedRenewable == "") {
+            selectedRenewable = globalRenewable
+        }
+        if (selectedBattery == "") {
+            selectedBattery = globalBattery
+        }
+        if (selectedFuel == "") {
+            selectedFuel = globalFuel
+        }
+
+        if (selectedEmgen == "") {
+            selectedEmgen = globalEmgen
+        }
+        if (selectedCogen == "") {
+            selectedCogen = globalCogen
+        }
+        if (selectedContract == "") {
+            selectedContract = globalContract
+        }
+
+        if (selectedData == "") {
+            selectedData = globalData
+        }
+        if (selectedEnergy == "") {
+            selectedEnergy = globalEnergy
+        }
+        //Variables for the slider to capture start and end values
+        var selectedStartftvalue = document.getElementById("grossSqft").value;
+        var selectedEndftvalue = document.getElementById("grossSqft").endValue;
+
+        var requestData = {
+            "agency": selectedAgency, "state": selectedState, "utility": selectedUtility,
+            "customer": selectedCustomer, "startftvalue": selectedStartftvalue, "endftvalue": selectedEndftvalue, "contract": selectedContract, "battery": selectedBattery, "emgen": selectedEmgen,
+            "cogen": selectedCogen, "fuelcell": selectedFuel, "renewable": selectedRenewable, "solar": selectedSolar,
+            "stage": selectedStage, "stage3": selectedStage3, "data": selectedData, "energy": selectedEnergy
+        };
+        document.getElementById('mid-table-loader').style.opacity = '1';
+        document.getElementById('agency-state-name-content').style.opacity = '0.2';
+        request.send(JSON.stringify(requestData));
+    };
 
 
-function createMarkers(data) {
-    //data = JSON.parse(data)
-	var colorsused = ["#4286f4","#f441eb","#f4414f","#41aff4","#49f441","#ebf441","#f4a041","#d0f441","#ff0080","#ff0000","#808080","#bd6769","#bdef69","#d18bfe","#10176f","#660000","#4286f4","#f441eb","#f4414f","#41aff4","#49f441","#ebf441","#f4a041","#d0f441","#ff0080","#ff0000","#808080","#bd6769","#bdef69"]
-    var lngfirst;
-    var latfirst;
-    var array = [];
-    data = JSON.parse(JSON.parse(data).data); 
-	
-    lngfirst = -85.41;
-    latfirst = 38.82;
-    latlong = data;
-    console.log(latlong)
-	
-	for (var i = 0; i < data.length; i++)
-	{
-		
-	if (parseInt(data[i].Longitude)&& parseInt(data[i].Latitude)){
-			lngfirst = data[i].Longitude
-			latfirst = data[i].Latitude
-				break;
-			}
-			else{
-			lngfirst = -85.41;
-				latfirst = -85.41;
-			}
-	}	
-			
-    for (var i = 0; i < data.length; i++) {
-			
-			
-		
 
-        if (parseInt(data[i].Longitude)) {
+    //
+    function getdropdowns_State(data) {
+        data = JSON.parse(JSON.parse(data).data);
+        var dropdownitems = [];
+        var dropdownitems_2 = [];
+        for (i = 0; i < data.length; i++) {
+            dropdownitems.push(data[i].Facility_Name)
+            dropdownitems_2.push(data[i].Building_Name)
+        }
 
-            lng = parseInt(data[i].Longitude)
-            lat = parseInt(data[i].Latitude)
+        dropdownitems = uniq_fast(dropdownitems)
+        dropdownitems_2 = uniq_fast(dropdownitems_2)
+
+        console.log(dropdownitems)
+        /*    document.getElementById("facilityName").items = dropdownitems;
+           document.getElementById("buildingName").items = dropdownitems_2; */
+        document.getElementById("facilityName_State").items = dropdownitems;
+        document.getElementById("buildingName_State").items = dropdownitems_2;
+
+        document.getElementById("noOppurtunity_State").innerHTML = data.length;
+    }
+
+    //create markers from data 
+    //color coded based on agency
+    function createMarkers(data) {
+        //data = JSON.parse(data)
+        var colorsused = ["#4286f4", "#f441eb", "#f4414f", "#41aff4", "#49f441", "#ebf441", "#f4a041", "#d0f441", "#ff0080", "#ff0000", "#808080", "#bd6769", "#bdef69", "#d18bfe", "#10176f", "#660000", "#4286f4", "#f441eb", "#f4414f", "#41aff4", "#49f441", "#ebf441", "#f4a041", "#d0f441", "#ff0080", "#ff0000", "#808080", "#bd6769", "#bdef69"]
+        var lngfirst;
+        var latfirst;
+        var array = [];
+        data = JSON.parse(JSON.parse(data).data);
+
+        lngfirst = -85.41;
+        latfirst = 38.82;
+        latlong = data;
+        console.log(latlong)
+
+        for (var i = 0; i < data.length; i++) {
+
+            if (parseInt(data[i].Longitude) && parseInt(data[i].Latitude)) {
+                lngfirst = data[i].Longitude
+                latfirst = data[i].Latitude
+                break;
+            }
+            else {
+                lngfirst = -85.41;
+                latfirst = -85.41;
+            }
+        }
+
+        for (var i = 0; i < data.length; i++) {
 
 
-            var x = new ol.Feature({
-                geometry: new ol.geom.Point(ol.proj.fromLonLat([lng, lat]))
-            });
-			
-			for (var j = 0; j < globalAgency.length; j++){
-			bla = colorsused[j]	
-			if(data[i].Agency== globalAgency[j]) {
-            x.setStyle(new ol.style.Style({
-                image: new ol.style.Icon(/** @type {olx.style.IconOptions} */({
-                    color: bla,
-					scale: '0.4',
-                    crossOrigin: 'anonymous',
-                    src: 'https://openlayers.org/en/v4.2.0/examples/data/dot.png'
-                }))
-            }));
-		
-			}
-			
-			
-			}
-			array.push(x)
-			}
-            
+
+
+            if (parseInt(data[i].Longitude)) {
+
+                lng = parseInt(data[i].Longitude)
+                lat = parseInt(data[i].Latitude)
+
+
+                var x = new ol.Feature({
+                    geometry: new ol.geom.Point(ol.proj.fromLonLat([lng, lat]))
+                });
+
+                for (var j = 0; j < globalAgency.length; j++) {
+                    bla = colorsused[j]
+                    if (data[i].Agency == globalAgency[j]) {
+                        x.setStyle(new ol.style.Style({
+                            image: new ol.style.Icon(/** @type {olx.style.IconOptions} */({
+                                color: bla,
+                                scale: '0.4',
+                                crossOrigin: 'anonymous',
+                                src: 'https://openlayers.org/en/v4.2.0/examples/data/dot.png'
+                            }))
+                        }));
+
+                    }
+
+
+                }
+                array.push(x)
+            }
+
 
         }
-    
-    console.log(lng)
-    console.log(array)
+
+        console.log(lng)
+        console.log(array)
 
 
-    var vectorSource = new ol.source.Vector({
-        features: array
-    });
-    vectorLayer.getSource().clear()
-    vectorLayer.setSource(vectorSource)
-	/*       vectorLayer = new ol.layer.Vector({
-			source: vectorSource
-		  }); */
+        var vectorSource = new ol.source.Vector({
+            features: array
+        });
+        vectorLayer.getSource().clear()
+        vectorLayer.setSource(vectorSource)
+        /*       vectorLayer = new ol.layer.Vector({
+                source: vectorSource
+              }); */
 
-    var rasterLayer = new ol.layer.Tile({
-        source: new ol.source.TileJSON({
-            url: 'https://api.tiles.mapbox.com/v3/mapbox.geography-class.json?secure',
-            crossOrigin: ''
-        })
-    });
+        var rasterLayer = new ol.layer.Tile({
+            source: new ol.source.TileJSON({
+                url: 'https://api.mapbox.com/v4/mapbox.streets-basic.json?access_token=pk.eyJ1Ijoic2VhcmNoaW5nYWtrdSIsImEiOiJjajVrdnVrZ3QybncxMnFvNnZwOXdnNzR3In0.TwSykj2VNdmMWko458WTmQ',
+                crossOrigin: ''
+            })
+        });
 
-    console.log(lngfirst)
-    console.log(latfirst)
-    lngfirst = parseFloat(lngfirst)
-    latfirst = parseFloat(latfirst)
-    console.log(lngfirst)
-    console.log(latfirst)
-	/* lngfirst = lngfirst.toPrecision(2);
-	latfirst = latfirst.toPrecision(2); */
-    console.log(lngfirst)
-    console.log(latfirst)
-    lngfirst = parseFloat(lngfirst)
-    latfirst = parseFloat(latfirst)
-    View = map31.getView()
-    console.log(View)
-    View.setCenter(ol.proj.transform([lngfirst, latfirst], 'EPSG:4326', 'EPSG:3857'))
-    View.setZoom(5)
+        console.log(lngfirst)
+        console.log(latfirst)
+        lngfirst = parseFloat(lngfirst)
+        latfirst = parseFloat(latfirst)
+        console.log(lngfirst)
+        console.log(latfirst)
+        /* lngfirst = lngfirst.toPrecision(2);
+        latfirst = latfirst.toPrecision(2); */
+        console.log(lngfirst)
+        console.log(latfirst)
+        lngfirst = parseFloat(lngfirst)
+        latfirst = parseFloat(latfirst)
+        View = map31.getView()
+        console.log(View)
+        View.setCenter(ol.proj.transform([lngfirst, latfirst], 'EPSG:4326', 'EPSG:3857'))
+        View.setZoom(5)
 
-}
+    }
 
 
     document.getElementById("applyButton_State").addEventListener("click", confirmFilters_State);
 
     document.getElementById("agency_State").addEventListener("px-dropdown-checkbox-changed", filterdrop);
-   
+
     document.getElementById("state_State").addEventListener("px-dropdown-checkbox-changed", filterdrop);
 
     document.getElementById("utility_State").addEventListener("px-dropdown-checkbox-changed", filterdrop);
-    
-	
-	
-	 dropDownnames = [{ "key": "1", "val": "All" }, { "key": "2", "val": "A" }, { "key": "3", "val": "B" }, { "key": "4", "val": "C" }, { "key": "5", "val": "D" }]
-            document.getElementById("dataGrade_State").items = dropDownnames
-            for (i = 1; i < dropDownnames.length; i++) {
-                globalData.push(dropDownnames[i].val)
-            }
-            document.getElementById("dataState_State").addEventListener("px-dropdown-checkbox-changed", filterdrop);
-            dropDownnames = [{ "key": "1", "val": "All" }, { "key": "2", "val": "ESPC" }, { "key": "3", "val": "NA" }, { "key": "4", "val": "UESC" }]
-            document.getElementById("contractingValue_State").items = dropDownnames
-            for (i = 1; i < dropDownnames.length; i++) {
-                globalContract.push(dropDownnames[i].val)
-            }
-            document.getElementById("contract_State").addEventListener("px-dropdown-checkbox-changed", filterdrop);
-            dropDownnames = [{ "key": "1", "val": "All" }, { "key": "2", "val": "NO" }, { "key": "3", "val": "YES" }]
-            document.getElementById("currentCustomer_State").items = dropDownnames
-            for (i = 1; i < dropDownnames.length; i++) {
-                globalCustomer.push(dropDownnames[i].val)
-            }
-            document.getElementById("customer_State").addEventListener("px-dropdown-checkbox-changed", filterdrop);
-            dropDownnames = [{ "key": "1", "val": "All" }, { "key": "2", "val": "0" }, { "key": "3", "val": "1" }]
-            document.getElementById("solarFlag_State").items = dropDownnames
-            for (i = 1; i < dropDownnames.length; i++) {
-                globalSolar.push(dropDownnames[i].val)
-            }
-            document.getElementById("solar_State").addEventListener("px-dropdown-checkbox-changed", filterdrop);
-            dropDownnames = [{ "key": "1", "val": "All" }, { "key": "2", "val": "0" }, { "key": "3", "val": "1" }]
-            document.getElementById("batteryFlag_State").items = dropDownnames
-            for (i = 1; i < dropDownnames.length; i++) {
-                globalBattery.push(dropDownnames[i].val)
-            }
-            document.getElementById("battery_State").addEventListener("px-dropdown-checkbox-changed", filterdrop);
-            dropDownnames = [{ "key": "1", "val": "All" }, { "key": "2", "val": "0" }, { "key": "3", "val": "1" }]
-            document.getElementById("cogenFlag_State").items = dropDownnames
-            for (i = 1; i < dropDownnames.length; i++) {
-                globalCogen.push(dropDownnames[i].val)
-            }
-            document.getElementById("cogen_State").addEventListener("px-dropdown-checkbox-changed", filterdrop);
-            dropDownnames = [{ "key": "1", "val": "All" }, { "key": "2", "val": "0" }, { "key": "3", "val": "1" }]
-            document.getElementById("emgenFlag_State").items = dropDownnames
-            for (i = 1; i < dropDownnames.length; i++) {
-                globalEmgen.push(dropDownnames[i].val)
-            }
-            document.getElementById("emgen_State").addEventListener("px-dropdown-checkbox-changed", filterdrop);
-            dropDownnames = [{ "key": "1", "val": "All" }, { "key": "2", "val": "0" }, { "key": "3", "val": "1" }]
-            document.getElementById("fuelcellFlag_State").items = dropDownnames
-            for (i = 1; i < dropDownnames.length; i++) {
-                globalFuel.push(dropDownnames[i].val)
-            }
-            document.getElementById("fuelcell_State").addEventListener("px-dropdown-checkbox-changed", filterdrop);
-            dropDownnames = [{ "key": "1", "val": "All" }, { "key": "2", "val": "Green" }, { "key": "3", "val": "NA" }, { "key": "4", "val": "Red" }, { "key": "5", "val": "Yellow" }]
-            document.getElementById("stageemissionName_State").items = dropDownnames
-            for (i = 1; i < dropDownnames.length; i++) {
-                globalStage.push(dropDownnames[i].val)
-            }
-            document.getElementById("stageemission_State").addEventListener("px-dropdown-checkbox-changed", filterdrop);
-            dropDownnames = [{ "key": "1", "val": "All" }, { "key": "2", "val": "Green" }, { "key": "3", "val": "NA" }, { "key": "4", "val": "Red" }]
-            document.getElementById("stage3emissionName_State").items = dropDownnames
-            for (i = 1; i < dropDownnames.length; i++) {
-                globalStage3.push(dropDownnames[i].val)
-            }
-            document.getElementById("stage3_State").addEventListener("px-dropdown-checkbox-changed", filterdrop);
-            dropDownnames = [{ "key": "1", "val": "All" }, { "key": "2", "val": "Green" }, { "key": "3", "val": "NA" }, { "key": "4", "val": "Red" }, { "key": "5", "val": "Yellow" }]
-            document.getElementById("energyIntensity_State").items = dropDownnames
-            for (i = 1; i < dropDownnames.length; i++) {
-                globalEnergy.push(dropDownnames[i].val)
-            }
-            document.getElementById("energy_State").addEventListener("px-dropdown-checkbox-changed", filterdrop);
-            dropDownnames = [{ "key": "1", "val": "All" }, { "key": "2", "val": "Green" }, { "key": "3", "val": "NA" }, { "key": "4", "val": "Red" }]
-            document.getElementById("renewableEnergy_State").items = dropDownnames
-            for (i = 1; i < dropDownnames.length; i++) {
-                globalRenewable.push(dropDownnames[i].val)
-            }
-            document.getElementById("renewable_State").addEventListener("px-dropdown-checkbox-changed", filterdrop);
+
+
+
+    dropDownnames = [{ "key": "1", "val": "All" }, { "key": "2", "val": "A" }, { "key": "3", "val": "B" }, { "key": "4", "val": "C" }, { "key": "5", "val": "D" }]
+    document.getElementById("dataGrade_State").items = dropDownnames
+    for (i = 1; i < dropDownnames.length; i++) {
+        globalData.push(dropDownnames[i].val)
+    }
+    document.getElementById("dataState_State").addEventListener("px-dropdown-checkbox-changed", filterdrop);
+    dropDownnames = [{ "key": "1", "val": "All" }, { "key": "2", "val": "ESPC" }, { "key": "3", "val": "NA" }, { "key": "4", "val": "UESC" }]
+    document.getElementById("contractingValue_State").items = dropDownnames
+    for (i = 1; i < dropDownnames.length; i++) {
+        globalContract.push(dropDownnames[i].val)
+    }
+    document.getElementById("contract_State").addEventListener("px-dropdown-checkbox-changed", filterdrop);
+    dropDownnames = [{ "key": "1", "val": "All" }, { "key": "2", "val": "NO" }, { "key": "3", "val": "YES" }]
+    document.getElementById("currentCustomer_State").items = dropDownnames
+    for (i = 1; i < dropDownnames.length; i++) {
+        globalCustomer.push(dropDownnames[i].val)
+    }
+    document.getElementById("customer_State").addEventListener("px-dropdown-checkbox-changed", filterdrop);
+    dropDownnames = [{ "key": "1", "val": "All" }, { "key": "2", "val": "0" }, { "key": "3", "val": "1" }]
+    document.getElementById("solarFlag_State").items = dropDownnames
+    for (i = 1; i < dropDownnames.length; i++) {
+        globalSolar.push(dropDownnames[i].val)
+    }
+    document.getElementById("solar_State").addEventListener("px-dropdown-checkbox-changed", filterdrop);
+    dropDownnames = [{ "key": "1", "val": "All" }, { "key": "2", "val": "0" }, { "key": "3", "val": "1" }]
+    document.getElementById("batteryFlag_State").items = dropDownnames
+    for (i = 1; i < dropDownnames.length; i++) {
+        globalBattery.push(dropDownnames[i].val)
+    }
+    document.getElementById("battery_State").addEventListener("px-dropdown-checkbox-changed", filterdrop);
+    dropDownnames = [{ "key": "1", "val": "All" }, { "key": "2", "val": "0" }, { "key": "3", "val": "1" }]
+    document.getElementById("cogenFlag_State").items = dropDownnames
+    for (i = 1; i < dropDownnames.length; i++) {
+        globalCogen.push(dropDownnames[i].val)
+    }
+    document.getElementById("cogen_State").addEventListener("px-dropdown-checkbox-changed", filterdrop);
+    dropDownnames = [{ "key": "1", "val": "All" }, { "key": "2", "val": "0" }, { "key": "3", "val": "1" }]
+    document.getElementById("emgenFlag_State").items = dropDownnames
+    for (i = 1; i < dropDownnames.length; i++) {
+        globalEmgen.push(dropDownnames[i].val)
+    }
+    document.getElementById("emgen_State").addEventListener("px-dropdown-checkbox-changed", filterdrop);
+    dropDownnames = [{ "key": "1", "val": "All" }, { "key": "2", "val": "0" }, { "key": "3", "val": "1" }]
+    document.getElementById("fuelcellFlag_State").items = dropDownnames
+    for (i = 1; i < dropDownnames.length; i++) {
+        globalFuel.push(dropDownnames[i].val)
+    }
+    document.getElementById("fuelcell_State").addEventListener("px-dropdown-checkbox-changed", filterdrop);
+    dropDownnames = [{ "key": "1", "val": "All" }, { "key": "2", "val": "Green" }, { "key": "3", "val": "NA" }, { "key": "4", "val": "Red" }, { "key": "5", "val": "Yellow" }]
+    document.getElementById("stageemissionName_State").items = dropDownnames
+    for (i = 1; i < dropDownnames.length; i++) {
+        globalStage.push(dropDownnames[i].val)
+    }
+    document.getElementById("stageemission_State").addEventListener("px-dropdown-checkbox-changed", filterdrop);
+    dropDownnames = [{ "key": "1", "val": "All" }, { "key": "2", "val": "Green" }, { "key": "3", "val": "NA" }, { "key": "4", "val": "Red" }]
+    document.getElementById("stage3emissionName_State").items = dropDownnames
+    for (i = 1; i < dropDownnames.length; i++) {
+        globalStage3.push(dropDownnames[i].val)
+    }
+    document.getElementById("stage3_State").addEventListener("px-dropdown-checkbox-changed", filterdrop);
+    dropDownnames = [{ "key": "1", "val": "All" }, { "key": "2", "val": "Green" }, { "key": "3", "val": "NA" }, { "key": "4", "val": "Red" }, { "key": "5", "val": "Yellow" }]
+    document.getElementById("energyIntensity_State").items = dropDownnames
+    for (i = 1; i < dropDownnames.length; i++) {
+        globalEnergy.push(dropDownnames[i].val)
+    }
+    document.getElementById("energy_State").addEventListener("px-dropdown-checkbox-changed", filterdrop);
+    dropDownnames = [{ "key": "1", "val": "All" }, { "key": "2", "val": "Green" }, { "key": "3", "val": "NA" }, { "key": "4", "val": "Red" }]
+    document.getElementById("renewableEnergy_State").items = dropDownnames
+    for (i = 1; i < dropDownnames.length; i++) {
+        globalRenewable.push(dropDownnames[i].val)
+    }
+    document.getElementById("renewable_State").addEventListener("px-dropdown-checkbox-changed", filterdrop);
     var dropdownitems = [];
     var dropdownitems_2 = [];
     var dropdownitems_3 = [];
 
 
+    //function called when any dropdown value is changed
     function filterdrop() {
         console.log("changed filter value");
 
 
         var agency = document.getElementById("agencyName_State").items
-		selectedAgency = []
+        selectedAgency = []
         for (i = 0; i < agency.length; i++) {
             if (agency[i].checked != undefined && agency[i].checked != false) {
-				if  (agency[0].checked == true){
-					selectedAgency = globalAgency;
-					agency[i].checked = true
-				}
-				else{
-                selectedAgency.push(agency[i].val);
-				}
+                if (agency[0].checked == true) {
+                    selectedAgency = globalAgency;
+                    agency[i].checked = true
+                }
+                else {
+                    selectedAgency.push(agency[i].val);
+                }
             }
         }
 
 
         var state = document.getElementById("stateName_State").items
-		selectedState = []
+        selectedState = []
         for (i = 0; i < state.length; i++) {
             if (state[i].checked != undefined && state[i].checked != false) {
-				if (state[0].checked == true){
-					selectedState = globalState;
-					state[i].checked = true
-				}
-				else{
-                selectedState.push(state[i].val);
-				}
+                if (state[0].checked == true) {
+                    selectedState = globalState;
+                    state[i].checked = true
+                }
+                else {
+                    selectedState.push(state[i].val);
+                }
 
             }
 
@@ -1767,7 +1816,7 @@ function createMarkers(data) {
 
 
         var dataGrade = document.getElementById("dataGrade_State").items
-		selectedData = []
+        selectedData = []
         for (i = 0; i < dataGrade.length; i++) {
             if (dataGrade[i].checked != undefined && dataGrade[i].checked != false) {
                 selectedData.push(dataGrade[i].val);
@@ -1776,9 +1825,9 @@ function createMarkers(data) {
 
         }
         console.log(selectedData);
-		
+
         var contract = document.getElementById("contractingValue_State").items
-		selectedContract = []
+        selectedContract = []
         for (i = 0; i < contract.length; i++) {
             if (contract[i].checked != undefined && contract[i].checked != false) {
                 selectedContract.push(contract[i].val);
@@ -1786,7 +1835,7 @@ function createMarkers(data) {
             }
         }
         var customer = document.getElementById("currentCustomer_State").items
-		selectedCustomer = []
+        selectedCustomer = []
         for (i = 0; i < customer.length; i++) {
             if (customer[i].checked != undefined && customer[i].checked != false) {
                 selectedCustomer.push(customer[i].val);
@@ -1794,7 +1843,7 @@ function createMarkers(data) {
             }
         }
         var solar = document.getElementById("solarFlag_State").items
-		selectedSolar = []
+        selectedSolar = []
         for (i = 0; i < solar.length; i++) {
             if (solar[i].checked != undefined && solar[i].checked != false) {
                 selectedSolar.push(solar[i].val);
@@ -1803,7 +1852,7 @@ function createMarkers(data) {
 
         }
         var emgen = document.getElementById("emgenFlag_State").items
-		selectedEmgen = []
+        selectedEmgen = []
         for (i = 0; i < emgen.length; i++) {
             if (emgen[i].checked != undefined && emgen[i].checked != false) {
                 selectedEmgen.push(emgen[i].val);
@@ -1812,7 +1861,7 @@ function createMarkers(data) {
 
         }
         var battery = document.getElementById("batteryFlag_State").items
-		selectedBattery = []
+        selectedBattery = []
         for (i = 0; i < battery.length; i++) {
             if (battery[i].checked != undefined && battery[i].checked != false) {
                 selectedBattery.push(battery[i].val);
@@ -1821,7 +1870,7 @@ function createMarkers(data) {
 
         }
         var cogen = document.getElementById("cogenFlag_State").items
-		selectedCogen = []
+        selectedCogen = []
         for (i = 0; i < cogen.length; i++) {
             if (cogen[i].checked != undefined && cogen[i].checked != false) {
                 selectedCogen.push(cogen[i].val);
@@ -1830,7 +1879,7 @@ function createMarkers(data) {
 
         }
         var fuelcell = document.getElementById("fuelcellFlag_State").items
-		selectedFuel = []
+        selectedFuel = []
 
         for (i = 0; i < fuelcell.length; i++) {
             if (fuelcell[i].checked != undefined && fuelcell[i].checked != false) {
@@ -1840,7 +1889,7 @@ function createMarkers(data) {
 
         }
         var stageemission = document.getElementById("stageemissionName_State").items
-		selectedStage = []
+        selectedStage = []
         for (i = 0; i < stageemission.length; i++) {
             if (stageemission[i].checked != undefined && stageemission[i].checked != false) {
                 selectedStage.push(stageemission[i].val);
@@ -1849,7 +1898,7 @@ function createMarkers(data) {
 
         }
         var stage3 = document.getElementById("stage3emissionName_State").items
-		selectedStage3 = []
+        selectedStage3 = []
         for (i = 0; i < stage3.length; i++) {
             if (stage3[i].checked != undefined && stage3[i].checked != false) {
                 selectedStage3.push(stage3[i].val);
@@ -1858,7 +1907,7 @@ function createMarkers(data) {
 
         }
         var energy = document.getElementById("energyIntensity_State").items
-		selectedEnergy = []
+        selectedEnergy = []
         for (i = 0; i < energy.length; i++) {
             if (energy[i].checked != undefined && energy[i].checked != false) {
                 selectedEnergy.push(energy[i].val);
@@ -1866,7 +1915,7 @@ function createMarkers(data) {
             }
         }
         var renewable = document.getElementById("renewableEnergy_State").items
-		selectedRenewable = []
+        selectedRenewable = []
         for (i = 0; i < renewable.length; i++) {
             if (renewable[i].checked != undefined && renewable[i].checked != false) {
                 selectedRenewable.push(renewable[i].val);
@@ -1878,201 +1927,190 @@ function createMarkers(data) {
 
 
     }
-	console.log('here');
+    console.log('here');
 
-	 console.log('in it');
+    console.log('in it');
 
-	 
-	 	
-		  makeRequest('GET', '/DataTable', function (err, data) {
-            console.log("success");
-            console.log(data)
-            result_data = JSON.parse(data)
-            result_data = JSON.parse(result_data.data)
-            drawTable_State(data)
 
-            for (i = 0; i < result_data.length; i++) {
-                dropdownitems.push(result_data[i].Facility_Name)
-                dropdownitems_2.push(result_data[i].Building_Name)
-            }
+    // Request to populate middle table in state
+    makeRequest('GET', '/DataTable', function (err, data) {
+        result_data = JSON.parse(data)
+        result_data = JSON.parse(result_data.data)
+        drawTable_State(data)
 
-            dropdownitems = uniq_fast(dropdownitems)
-            dropdownitems_2 = uniq_fast(dropdownitems_2)
+        for (i = 0; i < result_data.length; i++) {
+            dropdownitems.push(result_data[i].Facility_Name)
+            dropdownitems_2.push(result_data[i].Building_Name)
+        }
 
-            console.log(dropdownitems)
-            document.getElementById("facilityName_State").items = dropdownitems;
-            document.getElementById("buildingName_State").items = dropdownitems_2;
+        dropdownitems = uniq_fast(dropdownitems)
+        dropdownitems_2 = uniq_fast(dropdownitems_2)
+
+        document.getElementById("facilityName_State").items = dropdownitems;
+        document.getElementById("buildingName_State").items = dropdownitems_2;
 
 
 
+
+
+    }
+    );
+
+
+    //request to populate the state names, agency and utility 
+    makeRequest('GET', '/AllData', function (err, data) {
+        result_data = JSON.parse(data)
+        result_data = JSON.parse(result_data.data)
+        dropdownitems = ['All'];
+        dropdownitems_2 = ['All'];
+        dropdownitems_3 = ['All'];
+        for (i = 0; i < result_data.length; i++) {
+            dropdownitems.push(result_data[i].Agency)
+
+
+
+            dropdownitems_2.push(result_data[i].State_Name)
+
+
+            dropdownitems_3.push(result_data[i].Utility_Partner)
 
 
         }
-        );
-		
-		
-		
-		   makeRequest('GET', '/AllData', function (err, data) {
-            console.log("success");
-            console.log(data)
-            result_data = JSON.parse(data)
-            result_data = JSON.parse(result_data.data)
-            console.log(result_data)
-			dropdownitems = ['All'];
-			dropdownitems_2 = ['All'];
-			dropdownitems_3 = ['All'];
-            for (i = 0; i < result_data.length; i++) {
-                dropdownitems.push(result_data[i].Agency)
-				
-				
-				
-                dropdownitems_2.push(result_data[i].State_Name)
-				
-				
-                dropdownitems_3.push(result_data[i].Utility_Partner)
-				
+        dropdownitems = uniq_fast(dropdownitems)
 
-            }
-            dropdownitems = uniq_fast(dropdownitems)
-			
-			for (i = 1; i < dropdownitems.length; i++) {
-			globalAgency.push(dropdownitems[i].val)
-			}
-			
-			
-            dropdownitems_2 = uniq_fast(dropdownitems_2)
-			
-			for (i = 1; i < dropdownitems_2.length; i++) {
-			globalState.push(dropdownitems_2[i].val)
-			}
-		
-			
-            dropdownitems_3 = uniq_fast(dropdownitems_3)
-		
-			for (i = 1; i < dropdownitems_3.length; i++) {
-			globalUtility.push(dropdownitems_3[i].val)
-			}
-			
-            console.log(dropdownitems)
-            document.getElementById("agencyName_State").items = dropdownitems;
-            document.getElementById("agency_State").addEventListener("px-dropdown-checkbox-changed", filterdrop);
-            document.getElementById("stateName_State").items = dropdownitems_2;
-            document.getElementById("state_State").addEventListener("px-dropdown-checkbox-changed", filterdrop);
-            document.getElementById("utilityName_State").items = dropdownitems_3;
-            document.getElementById("utility_State").addEventListener("px-dropdown-checkbox-changed", filterdrop);
-			
-			
-
+        for (i = 1; i < dropdownitems.length; i++) {
+            globalAgency.push(dropdownitems[i].val)
         }
-        );
-		
-		 makeRequest('GET', '/chartTable_Agency', function (err, data) {
-            console.log("success");
-            console.log(data)
-            result_data = JSON.parse(data)
-            console.log(result_data)
-            result_data = JSON.parse(result_data.data)
-            console.log(result_data)
-			globalchartdata = result_data;
 
-            for (i = 0; i < result_data.length; i++) {
-                stateNamesData.push(result_data[i].Agency)
-                opportunitiesData.push(parseInt(result_data[i].Opportunities))
-            }
-            console.log(stateNamesData)
-            console.log(opportunitiesData)
-			/*dropdownitems=uniq_fast(dropdownitems) 
-			dropdownitems_2=uniq_fast(dropdownitems_2)
-		    
-			console.log(dropdownitems)
-			document.getElementById("facilityName").items=dropdownitems; 
-			document.getElementById("buildingName").items=dropdownitems_2; 
-			 */
-            //var s1tateNamesData=["StateNames","a","b","c"]
-            //var o1pportunitiesData=["Opportunities",10,20,15]
-            var chart = c3.generate({
-                bindto: "#chartlefttop_agency",
-                data: {
-                    x: 'StateNames',
-                    columns: [
-                        stateNamesData,
-                        opportunitiesData
 
-                    ],
-                    //url: '/chartData',
-                    type: 'bar',
-                    labels: true
-                },
-                padding: {
-                    bottom: 10,
-                    left: 70
-                },
-                axis: {
+        dropdownitems_2 = uniq_fast(dropdownitems_2)
 
-                    x: {
-                        type: 'category',
-                        label: {
-                            text: 'State Names',
-                            position: 'outer-middle'
-                        }
-                    },
-                    y: {
-                        label: {
-                            text: 'Opportunities',
-                            position: 'outer-center'
-                        }
-                    },
-                    rotated: true
-                },
-                point: {
-                    show: true
-                },
-                bar: {
-                    width: {
-                        ratio: 0.8 // this makes bar width 50% of length between ticks
+        for (i = 1; i < dropdownitems_2.length; i++) {
+            globalState.push(dropdownitems_2[i].val)
+        }
+
+
+        dropdownitems_3 = uniq_fast(dropdownitems_3)
+
+        for (i = 1; i < dropdownitems_3.length; i++) {
+            globalUtility.push(dropdownitems_3[i].val)
+        }
+
+        document.getElementById("agencyName_State").items = dropdownitems;
+        document.getElementById("agency_State").addEventListener("px-dropdown-checkbox-changed", filterdrop);
+        document.getElementById("stateName_State").items = dropdownitems_2;
+        document.getElementById("state_State").addEventListener("px-dropdown-checkbox-changed", filterdrop);
+        document.getElementById("utilityName_State").items = dropdownitems_3;
+        document.getElementById("utility_State").addEventListener("px-dropdown-checkbox-changed", filterdrop);
+
+
+
+    }
+    );
+
+
+    //populates agency vs Opportunities
+    makeRequest('GET', '/chartTable_Agency', function (err, data) {
+        result_data = JSON.parse(data)
+        result_data = JSON.parse(result_data.data)
+        globalchartdata = result_data;
+
+        for (i = 0; i < result_data.length; i++) {
+            stateNamesData.push(result_data[i].Agency)
+            opportunitiesData.push(parseInt(result_data[i].Opportunities))
+        }
+        /*dropdownitems=uniq_fast(dropdownitems) 
+        dropdownitems_2=uniq_fast(dropdownitems_2)
+        
+        console.log(dropdownitems)
+        document.getElementById("facilityName").items=dropdownitems; 
+        document.getElementById("buildingName").items=dropdownitems_2; 
+         */
+        //var s1tateNamesData=["StateNames","a","b","c"]
+        //var o1pportunitiesData=["Opportunities",10,20,15]
+        var chart = c3.generate({
+            bindto: "#chartlefttop_agency",
+            data: {
+                x: 'StateNames',
+                columns: [
+                    stateNamesData,
+                    opportunitiesData
+
+                ],
+                //url: '/chartData',
+                type: 'bar',
+                labels: true
+            },
+            padding: {
+                bottom: 10,
+                left: 70
+            },
+            axis: {
+
+                x: {
+                    type: 'category',
+                    label: {
+                        text: 'State Names',
+                        position: 'outer-middle'
                     }
-                    // or
-                    //dth: 100 // this makes bar width 100px
                 },
-                legend:
-                { show: false }
-            });
-
+                y: {
+                    label: {
+                        text: 'Opportunities',
+                        position: 'outer-center'
+                    }
+                },
+                rotated: true
+            },
+            point: {
+                show: true
+            },
+            bar: {
+                width: {
+                    ratio: 0.8 // this makes bar width 50% of length between ticks
+                }
+                // or
+                //dth: 100 // this makes bar width 100px
+            },
+            legend:
+            { show: false }
         });
-		
-		
-		 var rome = new ol.Feature({
-            geometry: new ol.geom.Point(ol.proj.fromLonLat([-80.41, 28.82]))
-        });
 
-        var london = new ol.Feature({
-            geometry: new ol.geom.Point(ol.proj.fromLonLat([-85.41, 38.82]))
-        });
+    });
 
-		/*       var madrid = new ol.Feature({
-			geometry: new ol.geom.Point(ol.proj.fromLonLat([-3.683333, 40.4]))
-		  }); */
 
-        rome.setStyle(new ol.style.Style({
-            image: new ol.style.Icon(/** @type {olx.style.IconOptions} */({
-                color: '#8959A8',
-                crossOrigin: 'anonymous',
-				scale: '0.6',
-                src: 'https://openlayers.org/en/v4.2.0/examples/data/dot.png'
-            }))
-        }));
+    var rome = new ol.Feature({
+        geometry: new ol.geom.Point(ol.proj.fromLonLat([-80.41, 28.82]))
+    });
 
-        london.setStyle(new ol.style.Style({
-            image: new ol.style.Icon(/** @type {olx.style.IconOptions} */({
-                color: '#4271AE',
-                crossOrigin: 'anonymous',
-				scale: '0.6',
-                src: 'https://openlayers.org/en/v4.2.0/examples/data/dot.png'
-            }))
-        }));
+    var london = new ol.Feature({
+        geometry: new ol.geom.Point(ol.proj.fromLonLat([-85.41, 38.82]))
+    });
 
-		/*       madrid.setStyle(new ol.style.Style({
-				image: new ol.style.Icon(/** @type {olx.style.IconOptions} */ /*({
+    /*       var madrid = new ol.Feature({
+        geometry: new ol.geom.Point(ol.proj.fromLonLat([-3.683333, 40.4]))
+      }); */
+
+    rome.setStyle(new ol.style.Style({
+        image: new ol.style.Icon(/** @type {olx.style.IconOptions} */({
+            color: '#8959A8',
+            crossOrigin: 'anonymous',
+            scale: '0.6',
+            src: 'https://openlayers.org/en/v4.2.0/examples/data/dot.png'
+        }))
+    }));
+
+    london.setStyle(new ol.style.Style({
+        image: new ol.style.Icon(/** @type {olx.style.IconOptions} */({
+            color: '#4271AE',
+            crossOrigin: 'anonymous',
+            scale: '0.6',
+            src: 'https://openlayers.org/en/v4.2.0/examples/data/dot.png'
+        }))
+    }));
+
+    /*       madrid.setStyle(new ol.style.Style({
+            image: new ol.style.Icon(/** @type {olx.style.IconOptions} */ /*({
 color: [113, 140, 0],
 crossOrigin: 'anonymous',
 src: 'https://openlayers.org/en/v4.2.0/examples/data/dot.png'
@@ -2080,108 +2118,339 @@ src: 'https://openlayers.org/en/v4.2.0/examples/data/dot.png'
 })); */
 
 
-        var vectorSource = new ol.source.Vector({
-            features: [rome, london]
-        });
+    var vectorSource = new ol.source.Vector({
+        features: [rome, london]
+    });
 
-        vectorLayer = new ol.layer.Vector({
-            source: vectorSource
-        });
+    vectorLayer = new ol.layer.Vector({
+        source: vectorSource
+    });
 
-        var rasterLayer = new ol.layer.Tile({
-            source: new ol.source.TileJSON({
-                url: 'https://api.tiles.mapbox.com/v3/mapbox.geography-class.json?secure',
-                crossOrigin: ''
-            })
-        });
-
-
+    var rasterLayer = new ol.layer.Tile({
+        source: new ol.source.TileJSON({
+            url: 'https://api.mapbox.com/v4/mapbox.streets-basic.json?access_token=pk.eyJ1Ijoic2VhcmNoaW5nYWtrdSIsImEiOiJjajVrdnVrZ3QybncxMnFvNnZwOXdnNzR3In0.TwSykj2VNdmMWko458WTmQ',
+            crossOrigin: ''
+        })
+    });
 
 
 
 
-        container = document.getElementById('popup_State')
-
-        overlay = new ol.Overlay(/** @type {olx.OverlayOptions} */({
-            element: container,
-            autoPan: true,
-            autoPanAnimation: {
-                duration: 250
-            }
-        }));
-
-        map31 = new ol.Map({
-            layers: [rasterLayer, vectorLayer],
-            overlays: [overlay],
-            target: document.getElementById('map3'),
-            view: new ol.View({
-                center: ol.proj.fromLonLat([-70.41, 18.82]),
-                zoom: 3
-            })
-        });
-
-        map31.on('pointermove', onMouseMove_State);
-
-        closer = document.getElementById('popup-closer_State')
-
-        closer.onclick = function () {
-            overlay.setPosition(undefined);
-            closer.blur();
-            return false;
-        };
 
 
-        makeRequest('GET', '/LongLat', function (err, data) {
-            console.log("success");
-            console.log(data)
-            
+    container = document.getElementById('popup_State')
 
-
-            var data = data
-            createMarkers(data)
+    overlay = new ol.Overlay(/** @type {olx.OverlayOptions} */({
+        element: container,
+        autoPan: true,
+        autoPanAnimation: {
+            duration: 250
         }
-        );
+    }));
 
-		
-		
-		
-		
-	
-makeRequest('GET', '/regulation', function (err, data) {
-console.log("success");
-console.log(data)
-// var data = data;
-// createMarkers(data)
-drawTable_policy(data)
-}
-);
+    map31 = new ol.Map({
+        layers: [rasterLayer, vectorLayer],
+        overlays: [overlay],
+        target: document.getElementById('map3'),
+        view: new ol.View({
+            center: ol.proj.fromLonLat([-70.41, 18.82]),
+            zoom: 3
+        })
+    });
 
+    map31.on('pointermove', onMouseMove_State);
 
+    closer = document.getElementById('popup-closer_State')
 
-
-
-
- 
- 
- 
- function drawTable_policy(data) {
-    data = JSON.parse(JSON.parse(data).data);
-    var nameMapping = {
-        State: "State",
-        Name: "Policy Link",
-      
-        
+    closer.onclick = function () {
+        overlay.setPosition(undefined);
+        closer.blur();
+        return false;
     };
 
+
+    makeRequest('GET', '/LongLat', function (err, data) {
+
+
+
+        var data = data
+        createMarkers(data)
+    }
+    );
+
+
+
+    // request to get state name - policies
+
+
+    makeRequest('GET', '/regulation', function (err, data) {
+        // var data = data;
+        // createMarkers(data)
+        data = JSON.parse(JSON.parse(data).data);
+
+        regulationdata = data;
+        var dropdownitems = [];
+        for (i = 0; i < data.length; i++) {
+            dropdownitems.push(data[i].State)
+        }
+        dropdownitems = uniq_fast(dropdownitems)
+        document.getElementById("statepolicy_State_content").items = dropdownitems
+        drawTable_policy(data)
+    }
+    );
+
+    document.getElementById("statepolicy_State_content").addEventListener("px-dropdown-checkbox-changed", filterregulations);
+
+
+
+
+    //function to filter the policies based on the state selected 
+    function filterregulations() {
+        allstate = document.getElementById("statepolicy_State_content").items
+        selectedstate = []
+        filterdata = []
+        for (i = 0; i < allstate.length; i++) {
+            if (allstate[i].checked != undefined && allstate[i].checked != false) {
+
+                selectedstate.push(allstate[i].val);
+
+            }
+        }
+        for (j = 0; j < selectedstate; j++) {
+            for (i = 0; i < regulationdata.length; i++) {
+
+                if (selectedstate[j] == regulationdata[i].State) {
+                    filterdata.push(regulationdata[i]);
+                    break;
+                }
+
+            }
+        }
+        console.log(selectedstate)
+
+    }
+
+
+
+
+
+
+    //functio to draw table for state- policy table
+
+    function drawTable_policy(data) {
+        var nameMapping = {
+            State: "State",
+            Name: "Policy Link",
+
+
+        };
+
+        var keys = d3.keys(nameMapping);
+
+        var table = d3.select("#table_policy");
+        table.selectAll("*").remove();
+
+        // var ths = theads.selectAll('th').data(keys).enter().append("th").text(function(d) {
+        //     return nameMapping[d];
+        // });
+
+        var tbodies = table.append("tbody");
+        var rows = tbodies.selectAll("tr").data(data);
+        rows = rows.enter().append("tr");
+
+        var dataCells = rows.selectAll("td")
+            .data(function (d) {
+                var values = d3.keys(nameMapping).map(function (key) {
+                    return d[key];
+                });
+                return values;
+            });
+        dataCells.enter().append("td").text(function (d, i) {
+            return d;
+        });
+    };
+
+}
+
+
+//function attached with agency overview
+function agencyOvrview() {
+
+    var opportunitiesData = ['Opportunities'];
+    var stateNamesData = ['StateNames'];
+
+    makeRequest('GET', '/totalscore', function (err, data) {
+        result_data = JSON.parse(data)
+        result_data = JSON.parse(result_data.data)
+        drawTable_avgScoreCard(result_data);
+    });
+    makeRequest('GET', '/scorecard', function (err, data) {
+        result_data = JSON.parse(data)
+        result_data = JSON.parse(result_data.data)
+        drawTable_scoreCard(result_data);
+    });
+    //function called on apply button in agency function
+    function confirmFilters_Agency() {
+
+
+        var request = new XMLHttpRequest();
+        var datapointsUrl = "/scorecardFiltered";
+        request.open('POST', datapointsUrl, true);
+        request.setRequestHeader('Content-Type', 'application/json');
+        request.onload = function (response) {
+            if (request.status >= 200 && request.status < 400) {
+                // document.getElementById('mid-table-loader').style.opacity = '0';
+                // document.getElementById('agency-state-name-content').style.opacity = '1';
+                getdropdowns_Agency(request.response);
+                drawTable_scoreCard(request.response);
+
+            } else {
+                console.log("failure on status code");
+            }
+
+
+        };
+        request.onerror = function () {
+            console.log("failure after success code");
+        };
+
+        if (selectedAgency == "") {
+            selectedAgency = globalAgency
+        }
+
+        if (selectedState == "") {
+            selectedState = globalState
+        }
+        if (selectedUtility == "") {
+            selectedUtility = globalUtility
+        }
+        if (selectedCustomer == "") {
+            selectedCustomer = globalCustomer
+        }
+
+        if (selectedSolar == "") {
+            selectedSolar = globalSolar
+        }
+        if (selectedStage == "") {
+            selectedStage = globalStage
+        }
+        if (selectedStage3 == "") {
+            selectedStage3 = globalStage3
+        }
+
+        if (selectedRenewable == "") {
+            selectedRenewable = globalRenewable
+        }
+        if (selectedBattery == "") {
+            selectedBattery = globalBattery
+        }
+        if (selectedFuel == "") {
+            selectedFuel = globalFuel
+        }
+
+        if (selectedEmgen == "") {
+            selectedEmgen = globalEmgen
+        }
+        if (selectedCogen == "") {
+            selectedCogen = globalCogen
+        }
+        if (selectedContract == "") {
+            selectedContract = globalContract
+        }
+
+        if (selectedData == "") {
+            selectedData = globalData
+        }
+        if (selectedEnergy == "") {
+            selectedEnergy = globalEnergy
+        }
+        //Variables for the slider to capture start and end values
+        var selectedStartftvalue = document.getElementById("grossSqft").value;
+        var selectedEndftvalue = document.getElementById("grossSqft").endValue;
+
+        var requestData = {
+            "agency": selectedAgency, "state": selectedState, "utility": selectedUtility,
+            "customer": selectedCustomer, "startftvalue": selectedStartftvalue, "endftvalue": selectedEndftvalue, "contract": selectedContract, "battery": selectedBattery, "emgen": selectedEmgen,
+            "cogen": selectedCogen, "fuelcell": selectedFuel, "renewable": selectedRenewable, "solar": selectedSolar,
+            "stage": selectedStage, "stage3": selectedStage3, "data": selectedData, "energy": selectedEnergy
+        };
+        document.getElementById('mid-table-loader').style.opacity = '1';
+        document.getElementById('agency-state-name-content').style.opacity = '0.2';
+        request.send(JSON.stringify(requestData));
+    };
+ 
+function drawTable_scoreCard(data) {
+    var score_color = {
+        'Green': 'Green',
+        'Yellow': 'Yellow',
+        'Red': 'Red',
+        'null': 'Grey'
+    };
+    //data = JSON.parse(JSON.parse(data).data);
+    console.log("Checking");
+    console.log(data);
+    var nameMapping = {
+        Agency: "Agency",
+        Stage_1_2_GHG_emissions: "Stage_1_2_Emissions",
+        Stage_3_GHG_emissions: "Stage_3_Emissions",
+        Reduction_in_Energy_Intensity: "Reduction In Energy",
+        Usage_of_renewable_energy: "Use Of Renewable Energy"
+    };
     var keys = d3.keys(nameMapping);
-
-    var table = d3.select("#table_policy");
+    var table = d3.select("#agency_scorecard");
     table.selectAll("*").remove();
+    var tbodies = table.append("tbody");
+    var rows = tbodies.selectAll("tr").data(data);
+    rows = rows.enter().append("tr");
 
-    // var ths = theads.selectAll('th').data(keys).enter().append("th").text(function(d) {
-    //     return nameMapping[d];
-    // });
+    var dataCells = rows.selectAll("td")
+        .data(function (d) {
+            var values = d3.keys(nameMapping).map(function (key) {
+                return d[key];
+            });
+            return values;
+        });
+    dataCells.enter().append("td").text(function (d, i) {
+        if (!(d in score_color)) {
+            return d;
+        }
+    });
+    dataCells.style('background-color', function (d) {
+        if (d in score_color) {
+            return 'white';
+        }
+    }).style('width', function (d) {
+        return '100px';
+    });
+    dataCells.append('div');
+    dataCells.select('div').style('height', function (d) {
+        if (d in score_color) {
+            return '20px';
+        }
+    }).style('margin-left', function (d) {
+        return '20px';
+    }).style('margin-right', function (d) {
+        return '20px';
+    }).style('background-color', function (d) {
+        if (d in score_color) {
+            return score_color[d];
+        }
+    });
+}
 
+
+//function to populate middle table in the agency
+
+function drawTable_avgScoreCard(data) {
+    //data = JSON.parse(JSON.parse(data).data);
+    var nameMapping = {
+        Agency: "Agency",
+        Total_Score: "Score",
+        Count: "Count Of Facilities"
+    };
+    var keys = d3.keys(nameMapping);
+    var table = d3.select("#agency_avgscore");
+    table.selectAll("*").remove();
     var tbodies = table.append("tbody");
     var rows = tbodies.selectAll("tr").data(data);
     rows = rows.enter().append("tr");
@@ -2195,123 +2464,74 @@ drawTable_policy(data)
         });
     dataCells.enter().append("td").text(function (d, i) {
         return d;
+    }).style('width', function (d) {
+        return '33%';
     });
 };
- 
-} 
 
-function agencyOvrview() {
-                
-                var opportunitiesData = ['Opportunities'];
-    var stateNamesData = ['StateNames'];
-                
-    makeRequest('GET', '/scorecard', function (err, data) {
-        result_data = JSON.parse(data)
-        result_data = JSON.parse(result_data.data)
-        drawTable_avgScoreCard(result_data);
-    });
-    
-    function drawTable_avgScoreCard(data) {
-        //data = JSON.parse(JSON.parse(data).data);
-        console.log(data);
-        var nameMapping = {
-            Agency: "Agency",
-            Total_Score: "Score",
-            Count: "Count Of Facilities"
-        };
-        var keys = d3.keys(nameMapping);
-        var table = d3.select("#agency_avgscore");
-        table.selectAll("*").remove();
-        var tbodies = table.append("tbody");
-        var rows = tbodies.selectAll("tr").data(data);
-        rows = rows.enter().append("tr");
 
-        var dataCells = rows.selectAll("td")
-            .data(function (d) {
-               var values = d3.keys(nameMapping).map(function (key) {
-                    return d[key];
-                });
-                return values;
-            });
-        dataCells.enter().append("td").text(function (d, i) {
-            return d;
-        });
-    };
-                
-                makeRequest('GET', '/chartTable_Agency', function (err, data) {
-            console.log("success");
-            console.log(data)
-            result_data = JSON.parse(data)
-            console.log(result_data)
-            result_data = JSON.parse(result_data.data)
-            console.log(result_data)
-                                                globalchartdata = result_data;
 
-            for (i = 0; i < result_data.length; i++) {
-                stateNamesData.push(result_data[i].Agency)
-                opportunitiesData.push(parseInt(result_data[i].Opportunities))
+//function to populate agency vs opportunities
+
+makeRequest('GET', '/chartTable_Agency', function (err, data) {
+    result_data = JSON.parse(data)
+    console.log(result_data)
+    result_data = JSON.parse(result_data.data)
+    console.log(result_data)
+    globalchartdata = result_data;
+
+    for (i = 0; i < result_data.length; i++) {
+        stateNamesData.push(result_data[i].Agency)
+        opportunitiesData.push(parseInt(result_data[i].Opportunities))
+    }
+    var chart = c3.generate({
+        bindto: "#chartlefttop_agencyoverview",
+        data: {
+            x: 'StateNames',
+            columns: [
+                stateNamesData,
+                opportunitiesData
+
+            ],
+            //url: '/chartData',
+            type: 'bar',
+            labels: true
+        },
+        padding: {
+            bottom: 10,
+            left: 70
+        },
+        axis: {
+
+            x: {
+                type: 'category',
+                label: {
+                    text: 'Agency Names',
+                    position: 'outer-middle'
+                }
+            },
+            y: {
+                label: {
+                    text: 'Opportunities',
+                    position: 'outer-center'
+                }
+            },
+            rotated: true
+        },
+        point: {
+            show: true
+        },
+        bar: {
+            width: {
+                ratio: 0.8 // this makes bar width 50% of length between ticks
             }
-            console.log(stateNamesData)
-            console.log(opportunitiesData)
-                                                /*dropdownitems=uniq_fast(dropdownitems) 
-                                                dropdownitems_2=uniq_fast(dropdownitems_2)
-                                    
-                                                console.log(dropdownitems)
-                                                document.getElementById("facilityName").items=dropdownitems; 
-                                                document.getElementById("buildingName").items=dropdownitems_2; 
-                                                 */
-            //var s1tateNamesData=["StateNames","a","b","c"]
-            //var o1pportunitiesData=["Opportunities",10,20,15]
-            var chart = c3.generate({
-                bindto: "#chartlefttop_agencyoverview",
-                data: {
-                    x: 'StateNames',
-                    columns: [
-                        stateNamesData,
-                        opportunitiesData
 
-                    ],
-                    //url: '/chartData',
-                    type: 'bar',
-                    labels: true
-                },
-                padding: {
-                    bottom: 10,
-                    left: 70
-                },
-                axis: {
+            // or
+            //dth: 100 // this makes bar width 100px
+        },
+        legend:
+        { show: false }
+    });
 
-                    x: {
-                        type: 'category',
-                        label: {
-                            text: 'State Names',
-                            position: 'outer-middle'
-                        }
-                    },
-                    y: {
-                        label: {
-                            text: 'Opportunities',
-                            position: 'outer-center'
-                        }
-                    },
-                    rotated: true
-                },
-                point: {
-                    show: true
-                },
-                bar: {
-                    width: {
-                        ratio: 0.8 // this makes bar width 50% of length between ticks
-                    }
-                                                                                
-                    // or
-                    //dth: 100 // this makes bar width 100px
-                },
-                legend:
-                { show: false }
-            });
-
-        });
-                
-
-}
+});
+};
